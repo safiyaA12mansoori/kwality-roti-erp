@@ -109,7 +109,7 @@ function workerInvoiceBody(state, statement, title) {
     <h2>Worker invoice · ${esc(title)}</h2>
     <p><strong>${esc(worker?.name || 'Worker')}</strong>${worker?.phone ? ` · ${esc(worker.phone)}` : ''}</p>
     <table>
-      <thead><tr><th>Date</th><th>Item</th><th class="num">Chapati</th><th class="num">Rate</th><th class="num">Pay</th><th>Status</th></tr></thead>
+      <thead><tr><th>Date</th><th>Item</th><th class="num">Chapati qty</th><th class="num">Rate</th><th class="num">Pay amount</th><th>Status</th></tr></thead>
       <tbody>${rowHtml || '<tr><td colspan="6">No chapati counted in this period.</td></tr>'}</tbody>
       <tfoot>
         <tr><td colspan="2">Total</td><td class="num">${num(statement.pieces)}</td><td></td><td class="num">${inr(statement.amount)}</td><td></td></tr>
@@ -239,7 +239,7 @@ export function Reports() {
       <h2>Costs</h2>
       <table><thead><tr><th>Item</th><th class="num">Quantity</th><th class="num">Price</th></tr></thead><tbody>${costRows || '<tr><td colspan="3">None</td></tr>'}</tbody></table>
       <h2>Workers</h2>
-      <table><thead><tr><th>Name</th><th class="num">Chapati</th><th class="num">Pay</th><th class="num">Unpaid</th></tr></thead><tbody>${workerRows || '<tr><td colspan="4">None</td></tr>'}</tbody></table>
+      <table><thead><tr><th>Name</th><th class="num">Chapati qty</th><th class="num">Pay amount</th><th class="num">Still to pay</th></tr></thead><tbody>${workerRows || '<tr><td colspan="4">None</td></tr>'}</tbody></table>
     `)
   }
 
@@ -307,7 +307,7 @@ export function Reports() {
       ['Still to pay', workerBill.unpaid],
       ['Advance left', workerBill.advanceLeft],
       [],
-      ['Date', 'Item', 'Chapati', 'Rate', 'Pay', 'Status'],
+      ['Date', 'Item', 'Chapati qty', 'Rate', 'Pay amount', 'Status'],
       ...workerBill.rows.map((row) => [
         row.date,
         byId(state.products, row.productId)?.name || 'Chapati',
@@ -428,7 +428,7 @@ export function Reports() {
             {makers.length > 0 && (
               <div className="table-wrap">
                 <table className="data">
-                  <thead><tr><th>Name</th><th className="num">Chapati</th><th className="num">Pay</th><th className="num">Still to pay</th></tr></thead>
+                  <thead><tr><th>Name</th><th className="num">Chapati qty</th><th className="num">Pay amount</th><th className="num">Still to pay</th></tr></thead>
                   <tbody>
                     {makers.map((row) => (
                       <tr key={row.worker.id}>

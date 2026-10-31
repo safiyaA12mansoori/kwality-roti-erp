@@ -276,14 +276,15 @@ button, input, select, .card, .tile, .list-row, .wage-card, .pick-row {
 table.data { width: 100%; border-collapse: collapse; font-size: 14.5px; }
 table.data th {
   text-align: left;
-  font-size: 11.5px;
-  letter-spacing: 0.05em;
+  font-size: 12px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ink-soft);
-  font-weight: 700;
+  color: #5a2e10;
+  font-weight: 800;
   padding: 8px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 2px solid var(--line-strong);
   white-space: nowrap;
+  background: #f6ead8;
 }
 table.data td { padding: 8px; border-bottom: 1px solid #f1e6da; vertical-align: middle; }
 table.data tr:last-child td { border-bottom: 0; }
@@ -608,6 +609,12 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
   padding: 10px 14px;
 }
 .print-preview-bar p { margin: 0; color: #eadcca; font-size: 13px; }
+.print-preview-bar .print-close {
+  background: #f0c14b;
+  border-color: #d4a017;
+  color: #2a1408;
+}
+.print-preview-bar .print-close:hover { background: #d4a017; color: #1a0c04; }
 .print-preview iframe {
   flex: 1;
   width: 100%;

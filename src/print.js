@@ -34,8 +34,9 @@ function printHtml(title, body) {
       p { margin: 4px 0; }
       .muted { color: #5c4a3a; }
       table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-      th, td { border-bottom: 1px solid #e6d9c8; padding: 7px 4px; text-align: left; vertical-align: top; }
-      .num { text-align: right; font-variant-numeric: tabular-nums; }
+      th, td { border-bottom: 1px solid #e6d9c8; padding: 8px 6px; text-align: left; vertical-align: top; color: #241910; }
+      th { background: #f3e6d4; font-size: 12px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; }
+      th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
       .sign { margin-top: 42px; display: flex; justify-content: space-between; gap: 24px; }
       .sign div { width: 42%; border-top: 1px solid #241910; padding-top: 6px; }
       @media print { body { margin: 12px; } }
@@ -53,7 +54,7 @@ function showPreview(title, html, autoPrint) {
       <p>To save PDF: Print → Destination → Save as PDF</p>
       <div class="row-actions">
         <button class="btn primary" type="button" data-print>Print / Save as PDF</button>
-        <button class="btn" type="button" data-close>Close</button>
+        <button class="btn print-close" type="button" data-close>Close</button>
       </div>
     </div>
     <iframe title="${esc(title)}"></iframe>
