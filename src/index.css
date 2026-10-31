@@ -461,6 +461,8 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
   padding: 16px;
   box-shadow: 0 24px 70px rgba(28, 18, 12, 0.28);
 }
+.pay-days { max-height: 240px; margin: 4px 0 8px; }
+.pay-days table { font-size: 13px; }
 .modal header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .modal header h2 { margin: 0; }
 

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { advanceBalance, byId, rangeSummary, workerSpan } from '../calc'
+import { advanceBalance, byId, rangeSummary, workerDayBook, workerSpan } from '../calc'
 import {
   addDaysISO,
   esc,
@@ -91,12 +91,16 @@ export function Wages() {
 
   function openPay(worker, span) {
     const advance = advanceBalance(state, worker.id)
+    const book = workerDayBook(state, worker.id, bounds.from, bounds.to)
     setPaying({
       workerId: worker.id,
       name: worker.name,
       salary: span.unpaid,
       pieces: span.unpaidPieces,
-      days: span.days.length,
+      dayCount: span.days.length,
+      days: book.days,
+      presentDays: book.presentDays,
+      absentDays: book.absentDays,
       advance,
       method: 'cash',
       mode: advance > 0 ? 'partial' : 'full',
@@ -263,7 +267,37 @@ function PayModal({ paying, setPaying, title, onClose, onSave }) {
         <p>
           {title} · {num(paying.pieces)} chapati · salary due {inr(paying.salary)}
         </p>
-        <p className="muted">Advance left {inr(paying.advance)}.</p>
+        <p className="muted">
+          Present {num(paying.presentDays || 0)} days · absent {num(paying.absentDays || 0)} days · advance left {inr(paying.advance)}.
+        </p>
+        {paying.days?.length > 0 && (
+          <div className="table-wrap pay-days">
+            <table className="data seq">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Attendance</th>
+                  <th className="num">Chapati</th>
+                  <th className="num">Earned</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paying.days.map((row) => (
+                  <tr key={row.date} className={row.pieces || row.present != null ? '' : 'dim-row'}>
+                    <td>{prettyDate(row.date)}</td>
+                    <td>
+                      {row.attendance === 'Present' && <span className="badge paid">Present</span>}
+                      {row.attendance === 'Absent' && <span className="badge due">Absent</span>}
+                      {row.attendance === 'Not marked' && <span className="badge off">Not marked</span>}
+                    </td>
+                    <td className="num">{row.pieces ? num(row.pieces) : '—'}</td>
+                    <td className="num">{row.amount ? inr(row.amount) : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         <p className="muted">How will you pay?</p>
         <div className="method-grid">
           {METHODS.map((item) => (
