@@ -174,3 +174,12 @@ export function Glyph({ name }) {
 export function go(id) {
   location.hash = id
 }
+
+export function openProfile(kind, id) {
+  try {
+    sessionStorage.setItem('erp-profile', JSON.stringify({ kind, id }))
+  } catch {
+    /* ignore */
+  }
+  location.hash = 'reports'
+}

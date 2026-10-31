@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { advanceBalance, hasWorkerHistory, sum, workerPrice } from '../calc'
 import { inr, num } from '../format'
 import { useStore } from '../store'
-import { Avatar, EmptyState, Field, Modal, SearchBar } from '../ui'
+import { Avatar, EmptyState, Field, Modal, SearchBar, openProfile } from '../ui'
 
 const blank = { id: '', name: '', phone: '', rate: '', active: true }
 
@@ -61,6 +61,7 @@ export function Workers() {
               {unpaid > 0 && <span className="badge due">Unpaid {inr(unpaid)}</span>}
             </div>
             <div className="row-actions">
+              <button className="btn" type="button" onClick={() => openProfile('worker', worker.id)}>Details</button>
               <button className="btn" type="button" onClick={() => setAdvance({ workerId: worker.id, name: worker.name, amount: '', note: '' })}>Advance</button>
               <button className="btn primary" type="button" onClick={() => { setError(''); setEditing({ ...worker, rate }) }}>Edit</button>
               {hasWorkerHistory(state, worker.id)

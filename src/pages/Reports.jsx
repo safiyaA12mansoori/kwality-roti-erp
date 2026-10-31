@@ -1,16 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   between,
   byId,
   costSummary,
   hotelCard,
+  hotelDayBook,
   hotelOrderBoard,
-  hotelStatement,
   rangeSummary,
+  walkInDayBook,
   walkInKey,
-  walkInStatement,
+  workerDayBook,
   workerReport,
-  workerStatement,
 } from '../calc'
 import {
   addDaysISO,
@@ -28,6 +28,7 @@ import {
   weekBounds,
 } from '../format'
 import { companyBlock, downloadExcel, downloadPdf, printDocument } from '../print'
+import { HotelProfile, WalkInProfile, WorkerProfile } from '../profile'
 import { useStore } from '../store'
 import { SearchBar } from '../ui'
 
@@ -51,81 +52,53 @@ function itemText(state, lines) {
   return lines.map((line) => `${num(line.qty)} ${esc(byId(state.products, line.productId)?.name || '')}`).join(', ')
 }
 
-function hotelInvoiceBody(state, statement, title) {
-  const hotel = statement.hotel
+function hotelInvoiceBody(state, book, title) {
+  const hotel = book.hotel
   const card = hotelCard(hotel)
-  const orderRows = statement.orders.map((order) => `<tr>
-      <td>${esc(prettyDate(order.date))}</td>
-      <td>${esc(order.no)}</td>
-      <td>${itemText(state, order.lines)}</td>
-      <td class="num">${inr(order.amount)}</td>
+  const dayRows = (book.days || []).map((row) => `<tr>
+      <td>${esc(prettyDate(row.date))}</td>
+      <td>${esc(row.delivery)}</td>
+      <td>${esc(row.challans || '—')}</td>
+      <td>${esc(row.notes || '—')}</td>
+      <td class="num">${row.pieces ? num(row.pieces) : '—'}</td>
+      <td class="num">${row.billed ? inr(row.billed) : '—'}</td>
+      <td class="num">${row.paid ? inr(row.paid) : '—'}</td>
+      <td>${esc(row.methods ? row.methods.split(',').map((item) => methodLabel(item.trim())).join(', ') : '—')}</td>
     </tr>`).join('')
-  const payRows = statement.payments.map((payment) => `<tr>
-    <td>${esc(prettyDate(payment.date))}</td>
-    <td>${esc(methodLabel(payment.method))}</td>
-    <td>${esc(payment.note || '')}</td>
-    <td class="num">${inr(payment.amount)}</td>
-  </tr>`).join('')
   return `
     ${companyBlock(state.settings)}
     <h2>Hotel invoice · ${esc(title)}</h2>
     <p><strong>${esc(hotel?.name || card.title)}</strong></p>
     <p>${esc([hotel?.contact, hotel?.phone, hotel?.address].filter(Boolean).join(' · '))}</p>
+    <p>Chapati ${num(book.pieces)} · billed ${inr(book.billed)} · received ${inr(book.collected)} · still due ${inr(book.balance)}</p>
     <table>
-      <thead><tr><th>Date</th><th>Challan</th><th>Items</th><th class="num">Amount</th></tr></thead>
-      <tbody>${orderRows || '<tr><td colspan="4">No orders in this period.</td></tr>'}</tbody>
-      <tfoot><tr><td colspan="3">Billed</td><td class="num">${inr(statement.billed)}</td></tr></tfoot>
-    </table>
-    <h2>Money received</h2>
-    <table>
-      <thead><tr><th>Date</th><th>How</th><th>Note</th><th class="num">Amount</th></tr></thead>
-      <tbody>${payRows || '<tr><td colspan="4">No payment in this period.</td></tr>'}</tbody>
-      <tfoot>
-        <tr><td colspan="3">Received in this period</td><td class="num">${inr(statement.collected)}</td></tr>
-        <tr><td colspan="3">Still due on the books</td><td class="num">${inr(statement.balance)}</td></tr>
-      </tfoot>
+      <thead><tr><th>Date</th><th>Delivery</th><th>Challan</th><th>Note</th><th class="num">Chapati qty</th><th class="num">Bill amount</th><th class="num">Received</th><th>How</th></tr></thead>
+      <tbody>${dayRows || '<tr><td colspan="8">No days in this period.</td></tr>'}</tbody>
     </table>
     <div class="sign"><div>Received by hotel</div><div>For ${esc(state.settings.name)}</div></div>
   `
 }
 
-function workerInvoiceBody(state, statement, title) {
-  const worker = statement.worker
-  const rowHtml = statement.rows.map((row) => `<tr>
+function workerInvoiceBody(state, book, title) {
+  const worker = book.worker
+  const dayRows = (book.days || []).map((row) => `<tr>
       <td>${esc(prettyDate(row.date))}</td>
-      <td>${esc(byId(state.products, row.productId)?.name || 'Chapati')}</td>
-      <td class="num">${num(row.qty)}</td>
-      <td class="num">${inr(row.rate)}</td>
-      <td class="num">${inr(row.amount)}</td>
-      <td>${row.paid ? 'Paid' : 'Due'}</td>
-    </tr>`).join('')
-  const advanceHtml = statement.advances.map((row) => `<tr>
-      <td>${esc(prettyDate(row.date))}</td>
-      <td>${esc(row.note || 'Advance')}</td>
-      <td class="num">${inr(row.amount)}</td>
+      <td>${esc(row.attendance)}</td>
+      <td class="num">${row.pieces ? num(row.pieces) : '—'}</td>
+      <td class="num">${row.rate ? inr(row.rate) : '—'}</td>
+      <td class="num">${row.amount ? inr(row.amount) : '—'}</td>
+      <td>${esc(row.amount ? (row.due === 0 ? `Paid${row.payMethod ? ` · ${methodLabel(row.payMethod)}` : ''}` : row.paid ? 'Part paid' : 'Due') : '—')}</td>
+      <td class="num">${row.advanceGiven ? inr(row.advanceGiven) : '—'}</td>
+      <td class="num">${row.advanceCut ? inr(row.advanceCut) : '—'}</td>
     </tr>`).join('')
   return `
     ${companyBlock(state.settings)}
     <h2>Worker invoice · ${esc(title)}</h2>
     <p><strong>${esc(worker?.name || 'Worker')}</strong>${worker?.phone ? ` · ${esc(worker.phone)}` : ''}</p>
+    <p>Present ${num(book.presentDays)} · absent ${num(book.absentDays)} · chapati ${num(book.pieces)} · pay ${inr(book.amount)} · still ${inr(book.unpaid)} · advance left ${inr(book.advanceLeft)}</p>
     <table>
-      <thead><tr><th>Date</th><th>Item</th><th class="num">Chapati qty</th><th class="num">Rate</th><th class="num">Pay amount</th><th>Status</th></tr></thead>
-      <tbody>${rowHtml || '<tr><td colspan="6">No chapati counted in this period.</td></tr>'}</tbody>
-      <tfoot>
-        <tr><td colspan="2">Total</td><td class="num">${num(statement.pieces)}</td><td></td><td class="num">${inr(statement.amount)}</td><td></td></tr>
-        <tr><td colspan="4">Paid in this period</td><td class="num">${inr(statement.paid)}</td><td></td></tr>
-        <tr><td colspan="4">Still to pay</td><td class="num">${inr(statement.unpaid)}</td><td></td></tr>
-      </tfoot>
-    </table>
-    <h2>Advance</h2>
-    <table>
-      <thead><tr><th>Date</th><th>Note</th><th class="num">Amount</th></tr></thead>
-      <tbody>${advanceHtml || '<tr><td colspan="3">No advance in this period.</td></tr>'}</tbody>
-      <tfoot>
-        <tr><td colspan="2">Advance given this period</td><td class="num">${inr(statement.advanceGiven)}</td></tr>
-        <tr><td colspan="2">Cut from salary this period</td><td class="num">${inr(statement.advanceCut)}</td></tr>
-        <tr><td colspan="2">Advance still on the books</td><td class="num">${inr(statement.advanceLeft)}</td></tr>
-      </tfoot>
+      <thead><tr><th>Date</th><th>Attendance</th><th class="num">Chapati qty</th><th class="num">Rate</th><th class="num">Pay amount</th><th>Pay status</th><th class="num">Advance taken</th><th class="num">Advance cut</th></tr></thead>
+      <tbody>${dayRows || '<tr><td colspan="8">No days in this period.</td></tr>'}</tbody>
     </table>
     <div class="sign"><div>Received by worker</div><div>For ${esc(state.settings.name)}</div></div>
   `
@@ -217,17 +190,40 @@ export function Reports() {
   }, [state.sales, bounds.from, bounds.to, walkNeedle])
 
   const hotelBill = useMemo(
-    () => (hotelId ? hotelStatement(state, hotelId, bounds.from, bounds.to) : null),
+    () => (hotelId ? hotelDayBook(state, hotelId, bounds.from, bounds.to) : null),
     [state, hotelId, bounds.from, bounds.to],
   )
   const workerBill = useMemo(
-    () => (workerId ? workerStatement(state, workerId, bounds.from, bounds.to) : null),
+    () => (workerId ? workerDayBook(state, workerId, bounds.from, bounds.to) : null),
     [state, workerId, bounds.from, bounds.to],
   )
   const walkBill = useMemo(
-    () => (walkKey ? walkInStatement(state, walkKey, bounds.from, bounds.to) : null),
+    () => (walkKey ? walkInDayBook(state, walkKey, bounds.from, bounds.to) : null),
     [state, walkKey, bounds.from, bounds.to],
   )
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('erp-profile')
+      if (!raw) return
+      sessionStorage.removeItem('erp-profile')
+      const saved = JSON.parse(raw)
+      if (saved.kind === 'hotel' && saved.id) {
+        setTab('hotel')
+        setHotelId(saved.id)
+      }
+      if (saved.kind === 'worker' && saved.id) {
+        setTab('worker')
+        setWorkerId(saved.id)
+      }
+      if (saved.kind === 'walk' && saved.id) {
+        setTab('walk')
+        setWalkKey(saved.id)
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [])
 
   function printTotals() {
     const costRows = costs.map((row, index) => `<tr><td class="sno">${index + 1}</td><td>${esc(row.name)}</td><td class="num">${esc(qtyWithUnit(row.qty, row.unit))}</td><td class="num">${inr(row.amount)}</td></tr>`).join('')
@@ -278,12 +274,16 @@ export function Reports() {
       ['Received in period', hotelBill.collected],
       ['Still due', hotelBill.balance],
       [],
-      ['Date', 'Challan', 'Items', 'Amount'],
-      ...hotelBill.orders.map((order) => [
-        order.date,
-        order.no,
-        order.lines.map((line) => `${line.qty} ${byId(state.products, line.productId)?.name || ''}`).join(', '),
-        order.amount,
+      ['Date', 'Delivery', 'Challan', 'Note', 'Chapati qty', 'Bill amount', 'Received', 'How'],
+      ...hotelBill.days.map((row) => [
+        row.date,
+        row.delivery,
+        row.challans,
+        row.notes,
+        row.pieces,
+        row.billed,
+        row.paid,
+        row.methods,
       ]),
     ])
   }
@@ -307,14 +307,16 @@ export function Reports() {
       ['Still to pay', workerBill.unpaid],
       ['Advance left', workerBill.advanceLeft],
       [],
-      ['Date', 'Item', 'Chapati qty', 'Rate', 'Pay amount', 'Status'],
-      ...workerBill.rows.map((row) => [
+      ['Date', 'Attendance', 'Chapati qty', 'Rate', 'Pay amount', 'Pay status', 'Advance taken', 'Advance cut'],
+      ...workerBill.days.map((row) => [
         row.date,
-        byId(state.products, row.productId)?.name || 'Chapati',
-        row.qty,
+        row.attendance,
+        row.pieces,
         row.rate,
         row.amount,
-        row.paid ? 'Paid' : 'Due',
+        row.amount ? (row.due === 0 ? 'Paid' : row.paid ? 'Part paid' : 'Due') : '',
+        row.advanceGiven,
+        row.advanceCut,
       ]),
     ])
   }
@@ -477,12 +479,10 @@ export function Reports() {
               </div>
             </div>
             <div className="invoice-preview">
-              {!hotelBill?.hotel && <p className="empty">Search and tap a hotel, then print.</p>}
+              {!hotelBill?.hotel && <p className="empty">Search and tap a hotel to see every day.</p>}
               {hotelBill?.hotel && (
                 <>
-                  <h2>{hotelCard(hotelBill.hotel).title}</h2>
-                  <p className="muted">{[hotelBill.hotel.phone, hotelBill.hotel.address].filter(Boolean).join(' · ')}</p>
-                  <p>{num(hotelBill.orders.length)} orders · billed {inr(hotelBill.billed)} · received {inr(hotelBill.collected)} · still due {inr(hotelBill.balance)}</p>
+                  <HotelProfile state={state} book={hotelBill} />
                   <div className="row-actions" style={{ marginTop: 12 }}>
                     <button className="btn primary" type="button" onClick={printHotel}>Print</button>
                     <button className="btn" type="button" onClick={pdfHotel}>PDF</button>
@@ -515,13 +515,10 @@ export function Reports() {
               </div>
             </div>
             <div className="invoice-preview">
-              {!workerBill?.worker && <p className="empty">Search and tap a worker, then print.</p>}
+              {!workerBill?.worker && <p className="empty">Search and tap a worker to see every day.</p>}
               {workerBill?.worker && (
                 <>
-                  <h2>{workerBill.worker.name}</h2>
-                  <p className="muted">{workerBill.worker.phone || 'No phone'}</p>
-                  <p>{num(workerBill.pieces)} chapati · pay {inr(workerBill.amount)} · still to pay {inr(workerBill.unpaid)}</p>
-                  <p className="muted">Advance left {inr(workerBill.advanceLeft)}</p>
+                  <WorkerProfile book={workerBill} />
                   <div className="row-actions" style={{ marginTop: 12 }}>
                     <button className="btn primary" type="button" onClick={printWorker}>Print</button>
                     <button className="btn" type="button" onClick={pdfWorker}>PDF</button>
@@ -551,12 +548,10 @@ export function Reports() {
               </div>
             </div>
             <div className="invoice-preview">
-              {!walkBill && <p className="empty">Search and tap a customer, then print.</p>}
+              {!walkBill && <p className="empty">Search and tap a customer to see every bill.</p>}
               {walkBill && (
                 <>
-                  <h2>{walkBill.name}</h2>
-                  <p className="muted">{walkBill.phone || 'No phone'}</p>
-                  <p>{num(walkBill.bills)} bills · {num(walkBill.pieces)} chapati · {inr(walkBill.amount)}</p>
+                  <WalkInProfile state={state} book={walkBill} />
                   <div className="row-actions" style={{ marginTop: 12 }}>
                     <button className="btn primary" type="button" onClick={printWalk} disabled={!walkBill.sales.length}>Print</button>
                     <button className="btn" type="button" onClick={pdfWalk} disabled={!walkBill.sales.length}>PDF</button>

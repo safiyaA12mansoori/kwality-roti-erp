@@ -479,6 +479,82 @@ export function costSummary(expenses) {
   return [...grouped.values()]
 }
 
+export function daysInRange(from, to) {
+  const days = []
+  let current = from
+  let guard = 0
+  while (current && current <= to && guard < 400) {
+    days.push(current)
+    const [year, month, day] = current.split('-').map(Number)
+    current = new Date(Date.UTC(year, month - 1, day + 1)).toISOString().slice(0, 10)
+    guard += 1
+  }
+  return days
+}
+
+export function hotelDayBook(state, hotelId, from, to) {
+  const statement = hotelStatement(state, hotelId, from, to)
+  const days = daysInRange(from, to).map((date) => {
+    const orders = statement.orders.filter((order) => order.date === date)
+    const payments = statement.payments.filter((payment) => payment.date === date)
+    const pending = orders.some((order) => order.status === 'pending')
+    return {
+      date,
+      orders,
+      payments,
+      pieces: sum(orders.flatMap((order) => order.lines), (line) => line.qty),
+      billed: sum(orders, (order) => order.amount),
+      paid: sum(payments, (payment) => payment.amount),
+      challans: orders.map((order) => order.no).filter(Boolean).join(', '),
+      notes: orders.map((order) => order.note).filter(Boolean).join(' · '),
+      delivery: orders.length === 0 ? 'No delivery' : pending ? 'Pending' : 'Delivered',
+      methods: [...new Set(payments.map((payment) => payment.method).filter(Boolean))].join(', '),
+    }
+  })
+  return { ...statement, days }
+}
+
+export function workerDayBook(state, workerId, from, to) {
+  const statement = workerStatement(state, workerId, from, to)
+  const marks = (state.attendance || []).filter((row) => row.workerId === workerId && between(row.date, from, to))
+  const days = daysInRange(from, to).map((date) => {
+    const made = statement.rows.filter((row) => row.date === date)
+    const mark = marks.find((row) => row.date === date)
+    const given = statement.advances.filter((row) => row.date === date)
+    const cut = statement.cuts.filter((row) => row.date === date)
+    return {
+      date,
+      attendance: !mark ? 'Not marked' : mark.present ? 'Present' : 'Absent',
+      present: mark?.present,
+      pieces: sum(made, (row) => row.qty),
+      rate: made[0]?.rate || 0,
+      amount: sum(made, (row) => row.amount),
+      paid: sum(made.filter((row) => row.paid), (row) => row.amount),
+      due: sum(made.filter((row) => !row.paid), (row) => row.amount),
+      payMethod: [...new Set(made.map((row) => row.payMethod).filter(Boolean))].join(', '),
+      advanceGiven: sum(given, (row) => row.amount),
+      advanceNote: given.map((row) => row.note).filter(Boolean).join(' · '),
+      advanceCut: sum(cut, (row) => row.amount),
+    }
+  })
+  const presentDays = days.filter((row) => row.present === true).length
+  const absentDays = days.filter((row) => row.present === false).length
+  return { ...statement, days, presentDays, absentDays }
+}
+
+export function walkInDayBook(state, key, from, to) {
+  const statement = walkInStatement(state, key, from, to)
+  const grouped = new Map()
+  for (const sale of statement.sales) {
+    const current = grouped.get(sale.date) || { date: sale.date, sales: [], pieces: 0, amount: 0 }
+    current.sales.push(sale)
+    current.pieces = round(current.pieces + sum(sale.lines, (line) => line.qty))
+    current.amount = round(current.amount + (Number(sale.amount) || 0))
+    grouped.set(sale.date, current)
+  }
+  return { ...statement, days: [...grouped.values()].sort((a, b) => a.date.localeCompare(b.date)) }
+}
+
 export function hasProductHistory(state, id) {
   if (state.production.some((row) => row.productId === id)) return true
   if (state.orders.some((order) => order.lines.some((line) => line.productId === id))) return true

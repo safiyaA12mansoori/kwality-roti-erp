@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { hasHotelHistory, hotelBalance, hotelPrice } from '../calc'
 import { inr } from '../format'
 import { useStore } from '../store'
-import { Avatar, EmptyState, Field, Modal, SearchBar } from '../ui'
+import { Avatar, EmptyState, Field, Modal, SearchBar, openProfile } from '../ui'
 
 const blank = { id: '', name: '', contact: '', phone: '', address: '', active: true, rates: {} }
 
@@ -69,6 +69,7 @@ export function Hotels() {
                 {balance === 0 && <span className="badge wait">Clear</span>}
               </div>
               <div className="row-actions">
+                <button className="btn" type="button" onClick={() => openProfile('hotel', hotel.id)}>Details</button>
                 <button className="btn primary" type="button" onClick={() => openEdit(hotel)}>Edit</button>
                 {hasHotelHistory(state, hotel.id)
                   ? <button className="btn" type="button" onClick={() => setHotelActive(hotel.id, hotel.active === false)}>

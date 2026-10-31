@@ -525,7 +525,7 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
 .search { width: min(280px, 100%); }
 .search.wide { width: 100%; max-width: none; }
 .stmt-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
-.stmt-split { display: grid; grid-template-columns: minmax(240px, 1fr) minmax(260px, 1.1fr); gap: 14px; align-items: start; }
+.stmt-split { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); gap: 14px; align-items: start; }
 .pick-list {
   max-height: 320px;
   overflow: auto;
@@ -555,7 +555,12 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
   padding: 12px;
   background: #fffdf8;
   min-height: 160px;
+  min-width: 0;
 }
+.profile h2 { margin: 0 0 4px; }
+.ledger { max-height: 58vh; margin-top: 12px; }
+.dim-row td { color: #9a7b5a; }
+.pick-list { max-height: 58vh; }
 .period-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; margin-top: 12px; }
 
 .paybar {
