@@ -23,11 +23,11 @@ import { go } from '../ui'
 
 const COLORS = {
   hotels: '#7c5cfc',
-  wages: '#ef4444',
-  expense: '#e8b84a',
-  raw: '#2bbbad',
+  wages: '#e11d48',
+  expense: '#ea580c',
+  raw: '#0f9b8e',
   money: '#16a34a',
-  dues: '#f4a261',
+  dues: '#2563eb',
 }
 
 function boundsFor(mode, date, month, from, to) {
@@ -169,7 +169,13 @@ export function Today() {
 
       <section className="kpi-grid six">
         {cards.map((card) => (
-          <button className="kpi" type="button" key={card.label} onClick={() => go(card.open)}>
+          <button
+            className="kpi"
+            type="button"
+            key={card.label}
+            onClick={() => go(card.open)}
+            style={{ '--kpi': card.color, background: `${card.color}18`, borderColor: `${card.color}66` }}
+          >
             <div className="kpi-top">
               <span>{card.label}</span>
               <Spark values={card.spark} color={card.color} />

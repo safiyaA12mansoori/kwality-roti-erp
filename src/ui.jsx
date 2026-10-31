@@ -57,9 +57,16 @@ export function Modal({ title, onClose, children }) {
   )
 }
 
+const AVATAR_COLORS = ['#16a34a', '#2563eb', '#7c5cfc', '#e11d48', '#ea580c', '#0f9b8e', '#c026d3', '#ca8a04']
+
 export function Avatar({ name }) {
   const letter = String(name || '?').trim().slice(0, 1).toUpperCase() || '?'
-  return <div className="wage-avatar" aria-hidden="true">{letter}</div>
+  const color = AVATAR_COLORS[(letter.charCodeAt(0) - 65 + 26) % AVATAR_COLORS.length]
+  return (
+    <div className="wage-avatar" aria-hidden="true" style={{ background: color, color: '#fff8ea' }}>
+      {letter}
+    </div>
+  )
 }
 
 export function EmptyState({ title, text, action }) {

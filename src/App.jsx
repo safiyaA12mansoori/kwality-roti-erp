@@ -108,7 +108,7 @@ export default function App() {
 
   return (
     <Guard>
-      <div className="app">
+      <div className="app" data-page={page.id}>
         {menuOpen && <button className="scrim" type="button" aria-label="Close menu" onClick={() => setMenuOpen(false)} />}
         <aside className={menuOpen ? 'sidebar open' : 'sidebar'}>
           <Brand subtitle={state.settings.tagline || 'Homemade Chapatis'} />
@@ -120,7 +120,7 @@ export default function App() {
                 <div key={item.id}>
                   {group && <div className="nav-group">{group}</div>}
                   <button
-                    className="nav-btn"
+                    className={`nav-btn tone-${item.id}`}
                     type="button"
                     aria-current={item.id === page.id ? 'page' : undefined}
                     onClick={() => go(item.id)}
