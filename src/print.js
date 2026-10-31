@@ -55,7 +55,7 @@ function showPreview(title, html, autoPrint) {
       <p>To save PDF: Print → Destination → Save as PDF</p>
       <div class="row-actions">
         <button class="btn primary" type="button" data-print>Print / Save as PDF</button>
-        <button class="btn print-close" type="button" data-close>Close</button>
+        <button class="btn print-close" type="button" data-close style="background:#2f6f4e;border-color:#1f4d36;color:#fff8ea">Close</button>
       </div>
     </div>
     <iframe title="${esc(title)}"></iframe>

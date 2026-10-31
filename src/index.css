@@ -625,12 +625,15 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
   padding: 10px 14px;
 }
 .print-preview-bar p { margin: 0; color: #eadcca; font-size: 13px; }
-.print-preview-bar .print-close {
-  background: #f0c14b;
-  border-color: #d4a017;
-  color: #2a1408;
+.print-preview .print-preview-bar button.print-close {
+  background: #2f6f4e;
+  border: 1px solid #1f4d36;
+  color: #fff8ea;
 }
-.print-preview-bar .print-close:hover { background: #d4a017; color: #1a0c04; }
+.print-preview .print-preview-bar button.print-close:hover {
+  background: #1f4d36;
+  color: #fff8ea;
+}
 .print-preview iframe {
   flex: 1;
   width: 100%;
