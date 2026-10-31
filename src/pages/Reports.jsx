@@ -230,16 +230,16 @@ export function Reports() {
   )
 
   function printTotals() {
-    const costRows = costs.map((row) => `<tr><td>${esc(row.name)}</td><td class="num">${esc(qtyWithUnit(row.qty, row.unit))}</td><td class="num">${inr(row.amount)}</td></tr>`).join('')
-    const workerRows = makers.map((row) => `<tr><td>${esc(row.worker.name)}</td><td class="num">${num(row.pieces)}</td><td class="num">${inr(row.amount)}</td><td class="num">${inr(row.unpaid)}</td></tr>`).join('')
+    const costRows = costs.map((row, index) => `<tr><td class="sno">${index + 1}</td><td>${esc(row.name)}</td><td class="num">${esc(qtyWithUnit(row.qty, row.unit))}</td><td class="num">${inr(row.amount)}</td></tr>`).join('')
+    const workerRows = makers.map((row, index) => `<tr><td class="sno">${index + 1}</td><td>${esc(row.worker.name)}</td><td class="num">${num(row.pieces)}</td><td class="num">${inr(row.amount)}</td><td class="num">${inr(row.unpaid)}</td></tr>`).join('')
     printDocument(`Statement ${title}`, `
       ${companyBlock(state.settings)}
       <h2>Statement · ${esc(title)}</h2>
       <p>Orders ${num(board.orderCount)} · Hotels ordered ${board.orderedHotels} of ${board.hotels} · Chapati ${num(summary.pieces)} · Worker pay ${inr(summary.wages)} · Received ${inr(summary.collected)} · Costs ${inr(summary.costs)}</p>
       <h2>Costs</h2>
-      <table><thead><tr><th>Item</th><th class="num">Quantity</th><th class="num">Price</th></tr></thead><tbody>${costRows || '<tr><td colspan="3">None</td></tr>'}</tbody></table>
+      <table><thead><tr><th class="sno">#</th><th>Item</th><th class="num">Quantity</th><th class="num">Price</th></tr></thead><tbody>${costRows || '<tr><td colspan="4">None</td></tr>'}</tbody></table>
       <h2>Workers</h2>
-      <table><thead><tr><th>Name</th><th class="num">Chapati qty</th><th class="num">Pay amount</th><th class="num">Still to pay</th></tr></thead><tbody>${workerRows || '<tr><td colspan="4">None</td></tr>'}</tbody></table>
+      <table><thead><tr><th class="sno">#</th><th>Name</th><th class="num">Chapati qty</th><th class="num">Pay amount</th><th class="num">Still to pay</th></tr></thead><tbody>${workerRows || '<tr><td colspan="5">None</td></tr>'}</tbody></table>
     `)
   }
 
@@ -408,18 +408,19 @@ export function Reports() {
             {costs.length === 0 && <p className="empty">No costs in this period.</p>}
             {costs.length > 0 && (
               <div className="table-wrap">
-                <table className="data">
-                  <thead><tr><th>Item</th><th className="num">Quantity</th><th className="num">Price</th></tr></thead>
+                <table className="data seq">
+                  <thead><tr><th className="sno">#</th><th>Item</th><th className="num">Quantity</th><th className="num">Price</th></tr></thead>
                   <tbody>
-                    {costs.map((row) => (
+                    {costs.map((row, index) => (
                       <tr key={`${row.name}-${row.unit}`}>
+                        <td className="sno">{index + 1}</td>
                         <td>{row.name}</td>
                         <td className="num">{qtyWithUnit(row.qty, row.unit)}</td>
                         <td className="num">{inr(row.amount)}</td>
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot><tr><td colSpan={2}>Total</td><td className="num">{inr(summary.costs)}</td></tr></tfoot>
+                  <tfoot><tr><td className="sno" /><td colSpan={2}>Total</td><td className="num">{inr(summary.costs)}</td></tr></tfoot>
                 </table>
               </div>
             )}
@@ -427,11 +428,20 @@ export function Reports() {
             {makers.length === 0 && <p className="empty">No chapati counted in this period.</p>}
             {makers.length > 0 && (
               <div className="table-wrap">
-                <table className="data">
-                  <thead><tr><th>Name</th><th className="num">Chapati qty</th><th className="num">Pay amount</th><th className="num">Still to pay</th></tr></thead>
+                <table className="data seq">
+                  <thead>
+                    <tr>
+                      <th className="sno">#</th>
+                      <th>Name</th>
+                      <th className="num">Chapati qty</th>
+                      <th className="num">Pay amount</th>
+                      <th className="num">Still to pay</th>
+                    </tr>
+                  </thead>
                   <tbody>
-                    {makers.map((row) => (
+                    {makers.map((row, index) => (
                       <tr key={row.worker.id}>
+                        <td className="sno">{index + 1}</td>
                         <td>{row.worker.name}</td>
                         <td className="num">{num(row.pieces)}</td>
                         <td className="num">{inr(row.amount)}</td>

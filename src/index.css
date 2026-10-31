@@ -289,6 +289,22 @@ table.data th {
 table.data td { padding: 8px; border-bottom: 1px solid #f1e6da; vertical-align: middle; }
 table.data tr:last-child td { border-bottom: 0; }
 table.data tfoot td { font-weight: 700; border-top: 1px solid var(--line-strong); }
+table.data.seq { width: 100%; }
+table.data.seq th.sno,
+table.data.seq td.sno {
+  width: 1%;
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: #5a2e10;
+  padding-right: 14px;
+}
+table.data.seq th.num,
+table.data.seq td.num {
+  width: 1%;
+  white-space: nowrap;
+  padding-left: 28px;
+}
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 tr.missing td { background: #fff8ee; }
 tr.paid { color: var(--ink-soft); }

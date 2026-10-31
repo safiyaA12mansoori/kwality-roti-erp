@@ -36,7 +36,8 @@ function printHtml(title, body) {
       table { width: 100%; border-collapse: collapse; margin-top: 8px; }
       th, td { border-bottom: 1px solid #e6d9c8; padding: 8px 6px; text-align: left; vertical-align: top; color: #241910; }
       th { background: #f3e6d4; font-size: 12px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; }
-      th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+      th.num, td.num { width: 1%; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; padding-left: 20px; }
+      th.sno, td.sno { width: 1%; text-align: center; white-space: nowrap; font-variant-numeric: tabular-nums; }
       .sign { margin-top: 42px; display: flex; justify-content: space-between; gap: 24px; }
       .sign div { width: 42%; border-top: 1px solid #241910; padding-top: 6px; }
       @media print { body { margin: 12px; } }
