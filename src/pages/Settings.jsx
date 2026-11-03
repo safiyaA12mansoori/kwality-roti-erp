@@ -96,8 +96,8 @@ export function Settings() {
     </article>
     <article className="card">
       <h2>Admin and staff logins</h2>
-      <p className="muted">Admin can open Dashboard and Statement. Staff can only enter hotels, workers, raw material, walk-in sales, and hotel orders.</p>
-      {state.users.map((user) => (
+      <p className="muted">Admin can open Dashboard and Statement. Staff can only enter hotels, workers, raw material, walk-in sales, and hotel orders. The owner login is private personal books and cannot be changed here.</p>
+      {state.users.filter((user) => user.role !== 'owner').map((user) => (
         <div className="list-row" key={user.id}>
           <div>
             <strong>{user.name}</strong>

@@ -6,6 +6,7 @@ import { Hotels } from './pages/Hotels'
 import { Login } from './pages/Login'
 import { Orders } from './pages/Orders'
 import { Prices } from './pages/Prices'
+import { OwnerBills, OwnerHome, OwnerMoney, OwnerSpend } from './pages/Owner'
 import { Reports } from './pages/Reports'
 import { Settings } from './pages/Settings'
 import { Attendance } from './pages/Attendance'
@@ -30,12 +31,21 @@ const PAGES = [
   { id: 'settings', label: 'Settings', group: 'Admin', icon: 'settings', dated: false, admin: true, blurb: 'Company name, logins, and a backup file on this computer.' },
 ]
 
+const OWNER_PAGES = [
+  { id: 'home', label: 'My dashboard', group: 'Owner', icon: 'home', dated: false, blurb: 'EMI, petrol, rashan, home, education, and other. Day, week, month, or custom.' },
+  { id: 'spend', label: 'My expenses', group: 'Owner', icon: 'spend', dated: true, blurb: 'Enter EMI, petrol, rashan, home expenses, education, or other.' },
+  { id: 'money', label: 'Money in', group: 'Owner', icon: 'money', dated: true, blurb: 'Add salary or other money so the available balance is correct.' },
+  { id: 'bills', label: 'My bills', group: 'Owner', icon: 'bills', dated: false, blurb: 'Print, Word, Excel, or invoice for the period and for each bill.' },
+]
+
 function allowedPages(role) {
+  if (role === 'owner') return OWNER_PAGES
   if (role === 'admin') return PAGES
   return PAGES.filter((page) => !page.admin)
 }
 
 function homePage(role) {
+  if (role === 'owner') return 'home'
   return role === 'admin' ? 'today' : 'orders'
 }
 
@@ -83,7 +93,11 @@ export default function App() {
     const next = allowed.some((item) => item.id === id) ? id : homePage(session.role)
     if (location.hash !== `#${next}`) history.replaceState(null, '', `#${next}`)
     setPageId(next)
-    const sync = () => setPageId(readHash(session.role))
+    const sync = () => {
+      const nextPage = readHash(session.role)
+      if (location.hash !== `#${nextPage}`) history.replaceState(null, '', `#${nextPage}`)
+      setPageId(nextPage)
+    }
     window.addEventListener('hashchange', sync)
     return () => window.removeEventListener('hashchange', sync)
   }, [session])
@@ -133,9 +147,9 @@ export default function App() {
             })}
           </nav>
           <p className="side-foot">
-            {session.name} · {session.role === 'admin' ? 'Admin' : 'Staff'}
+            {session.name} · {session.role === 'admin' ? 'Admin' : session.role === 'owner' ? 'Owner' : 'Staff'}
             <br />
-            {makers} makers · {hotels} hotels
+            {session.role === 'owner' ? 'Personal books' : `${makers} makers · ${hotels} hotels`}
             <br />
             <button className="btn" type="button" style={{ marginTop: 8 }} onClick={logout}>Sign out</button>
           </p>
@@ -151,15 +165,25 @@ export default function App() {
               {page.dated && <DayNav date={date} onChange={setDate} />}
             </div>
           </header>
-          <div className="quick-row desk-only">
-            <button className={page.id === 'count' ? 'btn on' : 'btn'} type="button" onClick={() => go('count')}>Count</button>
-            <button className={page.id === 'attend' ? 'btn on' : 'btn'} type="button" onClick={() => go('attend')}>Attendance</button>
-            <button className={page.id === 'orders' ? 'btn on' : 'btn'} type="button" onClick={() => go('orders')}>Hotel order</button>
-            <button className={page.id === 'counter' ? 'btn on' : 'btn'} type="button" onClick={() => go('counter')}>Walk-in</button>
-            {session.role === 'admin' && (
-              <button className={page.id === 'wages' ? 'btn on' : 'btn'} type="button" onClick={() => go('wages')}>Pay</button>
-            )}
-          </div>
+          {session.role !== 'owner' && (
+            <div className="quick-row desk-only">
+              <button className={page.id === 'count' ? 'btn on' : 'btn'} type="button" onClick={() => go('count')}>Count</button>
+              <button className={page.id === 'attend' ? 'btn on' : 'btn'} type="button" onClick={() => go('attend')}>Attendance</button>
+              <button className={page.id === 'orders' ? 'btn on' : 'btn'} type="button" onClick={() => go('orders')}>Hotel order</button>
+              <button className={page.id === 'counter' ? 'btn on' : 'btn'} type="button" onClick={() => go('counter')}>Walk-in</button>
+              {session.role === 'admin' && (
+                <button className={page.id === 'wages' ? 'btn on' : 'btn'} type="button" onClick={() => go('wages')}>Pay</button>
+              )}
+            </div>
+          )}
+          {session.role === 'owner' && (
+            <div className="quick-row desk-only">
+              <button className={page.id === 'home' ? 'btn on' : 'btn'} type="button" onClick={() => go('home')}>Dashboard</button>
+              <button className={page.id === 'spend' ? 'btn on' : 'btn'} type="button" onClick={() => go('spend')}>Expenses</button>
+              <button className={page.id === 'money' ? 'btn on' : 'btn'} type="button" onClick={() => go('money')}>Money in</button>
+              <button className={page.id === 'bills' ? 'btn on' : 'btn'} type="button" onClick={() => go('bills')}>Bills</button>
+            </div>
+          )}
           <div className="page" key={page.id}>
             {page.id === 'today' && <Today />}
             {page.id === 'count' && <Count />}
@@ -173,26 +197,47 @@ export default function App() {
             {page.id === 'costs' && <Costs />}
             {page.id === 'reports' && <Reports />}
             {page.id === 'settings' && <Settings />}
+            {page.id === 'home' && <OwnerHome />}
+            {page.id === 'spend' && <OwnerSpend />}
+            {page.id === 'money' && <OwnerMoney />}
+            {page.id === 'bills' && <OwnerBills />}
           </div>
-          <nav className="bottom-dock" aria-label="Daily work">
-            <button className={page.id === 'count' ? 'on' : ''} type="button" onClick={() => go('count')}>
-              <Glyph name="count" /><span>Count</span>
-            </button>
-            <button className={page.id === 'orders' ? 'on' : ''} type="button" onClick={() => go('orders')}>
-              <Glyph name="orders" /><span>Hotel</span>
-            </button>
-            <button className={page.id === 'counter' ? 'on' : ''} type="button" onClick={() => go('counter')}>
-              <Glyph name="counter" /><span>Walk-in</span>
-            </button>
-            {session.role === 'admin' && (
-              <button className={page.id === 'wages' ? 'on' : ''} type="button" onClick={() => go('wages')}>
-                <Glyph name="wages" /><span>Pay</span>
+          {session.role === 'owner' ? (
+            <nav className="bottom-dock" aria-label="Owner books">
+              <button className={page.id === 'home' ? 'on' : ''} type="button" onClick={() => go('home')}>
+                <Glyph name="home" /><span>Home</span>
               </button>
-            )}
-            <button className={page.id === 'attend' ? 'on' : ''} type="button" onClick={() => go('attend')}>
-              <Glyph name="attend" /><span>Attend</span>
-            </button>
-          </nav>
+              <button className={page.id === 'spend' ? 'on' : ''} type="button" onClick={() => go('spend')}>
+                <Glyph name="spend" /><span>Spend</span>
+              </button>
+              <button className={page.id === 'money' ? 'on' : ''} type="button" onClick={() => go('money')}>
+                <Glyph name="money" /><span>In</span>
+              </button>
+              <button className={page.id === 'bills' ? 'on' : ''} type="button" onClick={() => go('bills')}>
+                <Glyph name="bills" /><span>Bills</span>
+              </button>
+            </nav>
+          ) : (
+            <nav className="bottom-dock" aria-label="Daily work">
+              <button className={page.id === 'count' ? 'on' : ''} type="button" onClick={() => go('count')}>
+                <Glyph name="count" /><span>Count</span>
+              </button>
+              <button className={page.id === 'orders' ? 'on' : ''} type="button" onClick={() => go('orders')}>
+                <Glyph name="orders" /><span>Hotel</span>
+              </button>
+              <button className={page.id === 'counter' ? 'on' : ''} type="button" onClick={() => go('counter')}>
+                <Glyph name="counter" /><span>Walk-in</span>
+              </button>
+              {session.role === 'admin' && (
+                <button className={page.id === 'wages' ? 'on' : ''} type="button" onClick={() => go('wages')}>
+                  <Glyph name="wages" /><span>Pay</span>
+                </button>
+              )}
+              <button className={page.id === 'attend' ? 'on' : ''} type="button" onClick={() => go('attend')}>
+                <Glyph name="attend" /><span>Attend</span>
+              </button>
+            </nav>
+          )}
         </section>
       </div>
     </Guard>

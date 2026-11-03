@@ -11,6 +11,7 @@ import {
 } from './calc'
 import { costItem } from './costs'
 import { shiftISO, todayISO } from './format'
+import { emptyPersonal } from './personal'
 
 const KEY = 'roti-erp-v2'
 const OLD_KEY = 'roti-erp-v1'
@@ -41,10 +42,17 @@ export function hashPass(text) {
   return `h${(hash >>> 0).toString(16)}`
 }
 
+function userRole(role) {
+  if (role === 'admin') return 'admin'
+  if (role === 'owner') return 'owner'
+  return 'worker'
+}
+
 export function defaultUsers() {
   return [
     { id: 'u-admin', username: 'admin', password: hashPass('admin123'), role: 'admin', name: 'Admin' },
     { id: 'u-staff', username: 'staff', password: hashPass('staff123'), role: 'worker', name: 'Staff' },
+    { id: 'u-owner', username: 'owner', password: hashPass('owner123'), role: 'owner', name: 'Owner' },
   ]
 }
 
@@ -54,12 +62,26 @@ function cleanUsers(list) {
       id: user.id || uid(),
       username: String(user.username || '').trim().toLowerCase(),
       password: user.password || hashPass('staff123'),
-      role: user.role === 'admin' ? 'admin' : 'worker',
+      role: userRole(user.role),
       name: String(user.name || user.username || 'User').trim(),
     }))
     .filter((user) => user.username)
-  if (!users.some((user) => user.role === 'admin')) return defaultUsers()
+  if (!users.some((user) => user.role === 'admin')) {
+    return defaultUsers()
+  }
+  if (!users.some((user) => user.role === 'owner')) {
+    users.push({ id: 'u-owner', username: 'owner', password: hashPass('owner123'), role: 'owner', name: 'Owner' })
+  }
   return users
+}
+
+function cleanPersonal(raw) {
+  const books = raw || emptyPersonal()
+  return {
+    incomes: Array.isArray(books.incomes) ? books.incomes : [],
+    expenses: Array.isArray(books.expenses) ? books.expenses : [],
+    nextBill: Math.max(1, Number(books.nextBill) || 1),
+  }
 }
 
 export function normalize(raw) {
@@ -77,6 +99,7 @@ export function normalize(raw) {
     advances: raw?.advances || [],
     advanceCuts: raw?.advanceCuts || [],
     users: cleanUsers(raw?.users),
+    personal: cleanPersonal(raw?.personal),
   }
 }
 
@@ -236,6 +259,7 @@ function seed() {
     advances: [{ id: uid(), workerId: 'w1', date: today, amount: 5000, note: 'Advance' }],
     advanceCuts: [],
     users: defaultUsers(),
+    personal: emptyPersonal(),
   }
 }
 
@@ -329,13 +353,14 @@ function migrate(state) {
     }),
     expenses: (state.expenses || []).map(migrateExpense),
     users: cleanUsers(state.users),
+    personal: cleanPersonal(state.personal),
   }
 }
 
 function readSession() {
   try {
     const raw = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null')
-    if (raw?.id && (raw.role === 'admin' || raw.role === 'worker')) return raw
+    if (raw?.id && (raw.role === 'admin' || raw.role === 'worker' || raw.role === 'owner')) return raw
   } catch {
     // A bad session should only send the person back to login.
   }
@@ -417,11 +442,16 @@ export function StoreProvider({ children }) {
           return current
         }
         const existing = draft.id ? current.users.find((user) => user.id === draft.id) : null
+        if (existing?.role === 'owner') {
+          result.reason = 'Owner login cannot be changed here.'
+          return current
+        }
+        const nextRole = userRole(draft.role) === 'owner' ? 'worker' : userRole(draft.role)
         const row = {
           id: existing?.id || uid(),
           username,
           name,
-          role: draft.role === 'admin' ? 'admin' : 'worker',
+          role: nextRole,
           password: String(draft.password || '').trim() ? hashPass(draft.password) : existing?.password || hashPass('staff123'),
         }
         result.ok = true
@@ -441,6 +471,7 @@ export function StoreProvider({ children }) {
         if (!target) return current
         const admins = current.users.filter((user) => user.role === 'admin')
         if (target.role === 'admin' && admins.length <= 1) return current
+        if (target.role === 'owner') return current
         removed = true
         return { ...current, users: current.users.filter((user) => user.id !== id) }
       })
@@ -452,6 +483,88 @@ export function StoreProvider({ children }) {
     },
     patchSettings(partial) {
       setState((current) => ({ ...current, settings: { ...current.settings, ...partial } }))
+    },
+    savePersonalExpense(draft) {
+      const amount = moneyInput(draft.amount)
+      const note = String(draft.note || '').trim()
+      if (amount <= 0) return { ok: false, reason: 'Enter the amount.' }
+      const category = ['emi', 'petrol', 'ration', 'home', 'education', 'other'].includes(draft.category) ? draft.category : 'other'
+      let saved = null
+      setState((current) => {
+        const books = cleanPersonal(current.personal)
+        const no = draft.no || `H-${String(books.nextBill).padStart(4, '0')}`
+        const row = {
+          id: draft.id || uid(),
+          date: draft.date || dateRef.current,
+          category,
+          amount,
+          note,
+          method: draft.method === 'upi' || draft.method === 'bank' ? draft.method : 'cash',
+          no,
+        }
+        saved = row
+        const expenses = draft.id
+          ? books.expenses.map((item) => (item.id === draft.id ? row : item))
+          : [...books.expenses, row]
+        return {
+          ...current,
+          personal: {
+            ...books,
+            expenses,
+            nextBill: draft.id ? books.nextBill : books.nextBill + 1,
+          },
+        }
+      })
+      return { ok: true, row: saved }
+    },
+    deletePersonalExpense(id) {
+      setState((current) => ({
+        ...current,
+        personal: {
+          ...cleanPersonal(current.personal),
+          expenses: cleanPersonal(current.personal).expenses.filter((row) => row.id !== id),
+        },
+      }))
+    },
+    savePersonalIncome(draft) {
+      const amount = moneyInput(draft.amount)
+      const source = String(draft.source || '').trim()
+      if (amount <= 0) return { ok: false, reason: 'Enter the amount.' }
+      if (!source) return { ok: false, reason: 'Write where this money came from.' }
+      setState((current) => {
+        const books = cleanPersonal(current.personal)
+        const no = draft.no || `M-${String(books.nextBill).padStart(4, '0')}`
+        const row = {
+          id: draft.id || uid(),
+          date: draft.date || dateRef.current,
+          source,
+          amount,
+          note: String(draft.note || '').trim(),
+          method: draft.method === 'upi' || draft.method === 'bank' ? draft.method : 'cash',
+          no,
+        }
+        const incomes = draft.id
+          ? books.incomes.map((item) => (item.id === draft.id ? row : item))
+          : [...books.incomes, row]
+        return {
+          ...current,
+          personal: {
+            ...books,
+            incomes,
+            nextBill: draft.id ? books.nextBill : books.nextBill + 1,
+          },
+        }
+      })
+      return { ok: true }
+    },
+    deletePersonalIncome(id) {
+      setState((current) => ({
+        ...current,
+        personal: {
+          ...cleanPersonal(current.personal),
+          incomes: cleanPersonal(current.personal).incomes.filter((row) => row.id !== id),
+        },
+      }))
     },
     resetBooks() {
       setState(seed())

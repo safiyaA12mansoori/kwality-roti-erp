@@ -88,3 +88,11 @@ export function downloadPdf(title, body) {
   showPreview(title, printHtml(title, `${body}<p class="muted">Print → Destination → Save as PDF</p>`), false)
   return true
 }
+
+export function downloadWord(filename, title, body) {
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+    <head><meta charset="utf-8"><title>${esc(title)}</title></head>
+    <body>${body}</body></html>`
+  downloadFile(filename.endsWith('.doc') ? filename : `${filename}.doc`, html, 'application/msword')
+  return true
+}

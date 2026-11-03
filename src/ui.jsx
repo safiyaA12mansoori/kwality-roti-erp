@@ -167,6 +167,10 @@ export function Glyph({ name }) {
       {name === 'reports' && <path d="M5 19V5M5 19h14M8 16l3-4 3 2 4-6" {...pen} />}
       {name === 'settings' && <><circle cx="12" cy="12" r="3" {...pen} /><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M18 6l-1.6 1.6M7.6 16.4 6 18" {...pen} /></>}
       {name === 'attend' && <><rect x="4" y="5" width="16" height="15" rx="2" {...pen} /><path d="M8 3v4M16 3v4M8 12l2.2 2.2L16 9" {...pen} /></>}
+      {name === 'home' && <path d="M4 20V10l8-6 8 6v10M9 20v-6h6v6" {...pen} />}
+      {name === 'spend' && <><circle cx="12" cy="12" r="8" {...pen} /><path d="M12 8v8M9.5 10.5c.6-1 1.6-1.5 2.6-1.5 1.6 0 2.4.8 2.4 1.8 0 2.4-5 1.2-5 3.4 0 1 .9 1.8 2.6 1.8 1.1 0 2-.5 2.5-1.3" {...pen} /></>}
+      {name === 'money' && <path d="M4 7h16v10H4zM4 10c2.5 1.4 5.5 2 8 2s5.5-.6 8-2M12 7v10" {...pen} />}
+      {name === 'bills' && <><path d="M7 3h10v18H7z" {...pen} /><path d="M10 8h4M10 12h4M10 16h3" {...pen} /></>}
     </svg>
   )
 }

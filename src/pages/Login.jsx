@@ -13,7 +13,7 @@ export function Login() {
       <article className="card login-card">
         <Brand />
         <h1>Sign in</h1>
-        <p className="muted">Admin sees dashboard and statements. Staff enter hotels, workers, raw material, and walk-in sales.</p>
+        <p className="muted">Admin sees shop books. Staff enter hotels and sales. Owner has a private personal money book.</p>
         <form
           onSubmit={(event) => {
             event.preventDefault()
@@ -22,7 +22,7 @@ export function Login() {
               setError(result.reason)
               return
             }
-            location.hash = result.session.role === 'admin' ? 'today' : 'orders'
+            location.hash = result.session.role === 'admin' ? 'today' : result.session.role === 'owner' ? 'home' : 'orders'
           }}
         >
           <div className="stack">
@@ -34,7 +34,7 @@ export function Login() {
             </Field>
             {error && <p className="form-error">{error}</p>}
             <button className="btn primary big" type="submit">Enter</button>
-            <p className="muted">Try: admin / admin123 or staff / staff123</p>
+            <p className="muted">Try: admin / admin123, staff / staff123, or owner / owner123</p>
           </div>
         </form>
       </article>
