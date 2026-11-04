@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { BarChart, Donut, Spark } from '../charts'
-import { costSummary, hotelBalance, hotelOrderBoard, rangeSummary, shopSnapshot } from '../calc'
+import { costSummary, hotelBalance, hotelOrderBoard, rangeSummary, shopSnapshot, unpaidBills } from '../calc'
 import {
   addDaysISO,
   compactInr,
@@ -70,6 +70,7 @@ export function Today() {
     .map((hotel) => ({ hotel, balance: hotelBalance(state, hotel.id) }))
     .filter((row) => row.balance > 0)
     .sort((a, b) => b.balance - a.balance)
+  const waiting = useMemo(() => unpaidBills(state), [state])
   const vsLabel = mode === 'day' ? 'vs yesterday' : 'vs last period'
   const months = Array.from({ length: 6 }, (_, index) => shiftMonth(thisMonth(), index - 5))
   const monthSnap = months.map((key) => {
@@ -167,6 +168,49 @@ export function Today() {
         </div>
       </div>
 
+      <section className={waiting.rows.length ? 'due-board live' : 'due-board clear'}>
+        <div className="due-board-head">
+          <span className={waiting.rows.length ? 'pulse-dot' : 'pulse-dot ok'} />
+          {waiting.rows.length ? (
+            <div>
+              <strong>Waiting for payment</strong>
+              <p>
+                {waiting.parties === 1 ? '1 party' : `${num(waiting.parties)} parties`}
+                {waiting.catering ? ` · ${num(waiting.catering)} catering` : ''}
+                {` still to pay ${inr(waiting.total)}`}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <strong>All hotel and catering bills are paid</strong>
+              <p>No pending order is waiting for money.</p>
+            </div>
+          )}
+          {waiting.rows.length > 0 && (
+            <button className="btn good" type="button" onClick={() => go('orders')}>Collect now</button>
+          )}
+        </div>
+        {waiting.rows.length > 0 && (
+          <div className="due-track" style={{ '--due-speed': `${Math.max(16, waiting.rows.length * 5)}s` }}>
+            <div className="due-track-inner">
+              {[0, 1].flatMap((copy) => waiting.rows.map((row) => (
+                <button
+                  className={`due-chip ${row.kind === 'Catering' ? 'cater' : 'hotel'}`}
+                  type="button"
+                  key={`${copy}-${row.id}`}
+                  onClick={() => go('orders')}
+                >
+                  <span className="due-kind">{row.kind}{row.pending ? ' · pending' : ''}</span>
+                  <strong>{row.card.title}</strong>
+                  <em>{row.no} · {prettyDate(row.date)}</em>
+                  <b>{inr(row.due)}</b>
+                </button>
+              )))}
+            </div>
+          </div>
+        )}
+      </section>
+
       <section className="kpi-grid six">
         {cards.map((card) => (
           <button
@@ -223,6 +267,7 @@ export function Today() {
         <div className="card-head">
           <h2>Details</h2>
           <div className="dash-tabs">
+            <button className={tab === 'due' ? 'on' : ''} type="button" onClick={() => setTab('due')}>Still to pay</button>
             <button className={tab === 'hotels' ? 'on' : ''} type="button" onClick={() => setTab('hotels')}>Hotels entry</button>
             <button className={tab === 'wages' ? 'on' : ''} type="button" onClick={() => setTab('wages')}>Workers payment</button>
             <button className={tab === 'raw' ? 'on' : ''} type="button" onClick={() => setTab('raw')}>Raw material</button>
@@ -230,6 +275,22 @@ export function Today() {
             <button className={tab === 'money' ? 'on' : ''} type="button" onClick={() => setTab('money')}>Money received</button>
           </div>
         </div>
+        {tab === 'due' && (
+          waiting.rows.length === 0
+            ? <p className="empty">Every hotel and catering bill is clear.</p>
+            : waiting.rows.map((row) => (
+              <div className="list-row miss" key={row.id}>
+                <div>
+                  <strong>{row.card.title}</strong>
+                  <div className="muted">{row.kind} · {row.no} · {prettyDate(row.date)}{row.pending ? ' · pending delivery' : ''}</div>
+                </div>
+                <div className="row-actions">
+                  <b>{inr(row.due)}</b>
+                  <button className="btn good" type="button" onClick={() => go('orders')}>Receive</button>
+                </div>
+              </div>
+            ))
+        )}
         {tab === 'hotels' && (
           <>
             <p className="muted">{snap.hotelOrdered} of {snap.hotels} hotels ordered · {snap.hotelMissing} have no order · billed {inr(snap.hotelBilled)}</p>

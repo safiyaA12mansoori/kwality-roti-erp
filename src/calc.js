@@ -95,6 +95,44 @@ export function hotelBalance(state, hotelId) {
   return round(billed - paid)
 }
 
+export function partyKind(hotel, note) {
+  const blob = `${hotel?.name || ''} ${hotel?.contact || ''} ${hotel?.address || ''} ${note || ''}`.toLowerCase()
+  if (/cater|banquet|function|wedding|party hall/.test(blob)) return 'Catering'
+  return 'Hotel'
+}
+
+export function unpaidBills(state) {
+  const orders = state.orders || []
+  const rows = orders
+    .map((order) => {
+      const paid = orderPaid(state, order.id)
+      const due = round(order.amount - paid)
+      const hotel = byId(state.hotels, order.hotelId)
+      return {
+        id: order.id,
+        no: order.no,
+        date: order.date,
+        hotel,
+        card: hotelCard(hotel),
+        kind: partyKind(hotel, order.note),
+        pending: order.status !== 'completed',
+        amount: order.amount,
+        paid,
+        due,
+      }
+    })
+    .filter((row) => row.due > 0)
+    .sort((a, b) => b.due - a.due || String(b.date).localeCompare(String(a.date)))
+  const parties = new Set(rows.map((row) => row.hotel?.id).filter(Boolean))
+  return {
+    rows,
+    total: sum(rows, (row) => row.due),
+    parties: parties.size,
+    hotels: rows.filter((row) => row.kind === 'Hotel').length,
+    catering: rows.filter((row) => row.kind === 'Catering').length,
+  }
+}
+
 export function allocatePayment({ orders, payments, hotelId, amount, date, method, note, uid }) {
   let left = round(amount)
   if (left <= 0) return []
