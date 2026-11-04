@@ -10,6 +10,7 @@ import { OwnerBills, OwnerHome, OwnerMoney, OwnerSpend } from './pages/Owner'
 import { Reports } from './pages/Reports'
 import { Settings } from './pages/Settings'
 import { Attendance } from './pages/Attendance'
+import { Pending } from './pages/Pending'
 import { Today } from './pages/Today'
 import { Wages } from './pages/Wages'
 import { Workers } from './pages/Workers'
@@ -18,6 +19,7 @@ import { Brand, DayNav, Glyph } from './ui'
 
 const PAGES = [
   { id: 'today', label: 'Dashboard', group: 'Admin', icon: 'today', dated: true, admin: true, blurb: 'See money, pay, and costs. Tap a card to open the page.' },
+  { id: 'pending', label: 'Pending pay', group: 'Admin', icon: 'pending', dated: false, admin: true, blurb: 'All unpaid hotel and catering bills. Receive money and mark completed.' },
   { id: 'reports', label: 'Statement', group: 'Admin', icon: 'reports', dated: false, admin: true, blurb: 'Search and print one hotel, worker, or walk-in invoice.' },
   { id: 'count', label: 'Count chapati', group: 'Daily', icon: 'count', dated: true, blurb: 'Type the count, tap Save. Tap Edit to change it. Then pay workers.' },
   { id: 'wages', label: 'Pay workers', group: 'Daily', icon: 'wages', dated: true, admin: true, blurb: 'Pay 1 day, 1 week, 15 days, or custom. Cash, UPI, or bank.' },
@@ -186,6 +188,7 @@ export default function App() {
           )}
           <div className="page" key={page.id}>
             {page.id === 'today' && <Today />}
+            {page.id === 'pending' && <Pending />}
             {page.id === 'count' && <Count />}
             {page.id === 'wages' && <Wages />}
             {page.id === 'attend' && <Attendance />}

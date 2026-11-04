@@ -19,7 +19,7 @@ import {
   weekBounds,
 } from '../format'
 import { useStore } from '../store'
-import { go } from '../ui'
+import { go, openPending } from '../ui'
 
 function BelanStage({ live }) {
   return (
@@ -163,7 +163,7 @@ export function Today() {
       delta: pctChange(snap.dues, prev.dues),
       color: COLORS.dues,
       spark: sparkDays(state, bounds.to, (row) => row.dues),
-      open: 'orders',
+      open: 'pending',
     },
   ]
 
@@ -218,7 +218,7 @@ export function Today() {
               </div>
             )}
             {waiting.rows.length > 0 && (
-              <button className="open-this-btn" type="button" onClick={() => go('orders')}>
+              <button className="open-this-btn" type="button" onClick={() => openPending()}>
                 Open this
               </button>
             )}
@@ -231,7 +231,7 @@ export function Today() {
                     className={`due-chip ${row.kind === 'Catering' ? 'cater' : 'hotel'}`}
                     type="button"
                     key={`${copy}-${row.id}`}
-                    onClick={() => go('orders')}
+                    onClick={() => openPending(row.id)}
                   >
                     <span className="open-this">Open this</span>
                     <span className="due-kind">{row.kind}{row.pending ? ' · pending' : ''}</span>

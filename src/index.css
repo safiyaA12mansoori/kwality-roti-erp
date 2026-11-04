@@ -197,6 +197,7 @@ button, input, select, .card, .tile, .list-row, .wage-card, .pick-row {
 .nav-btn.tone-costs { --tone: #ca8a04; }
 .nav-btn.tone-prices { --tone: #4f46e5; }
 .nav-btn.tone-settings { --tone: #78716c; }
+.nav-btn.tone-pending { --tone: #e11d48; }
 .nav-btn.tone-home { --tone: #16a34a; }
 .nav-btn.tone-spend { --tone: #ea580c; }
 .nav-btn.tone-money { --tone: #0284c7; }
@@ -643,21 +644,30 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
   gap: 10px;
   align-items: center;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 22px;
   padding: 10px 14px 10px 8px;
-  border: 1px solid #fecaca;
+  border: 1px solid #f0c14b;
   background:
-    linear-gradient(110deg, #fff1f2 0%, #fff7ed 42%, #fff1f2 100%);
-  background-size: 220% 100%;
-  animation: due-wash 6s ease-in-out infinite;
-  box-shadow: 0 10px 28px rgba(225, 29, 72, 0.12);
+    radial-gradient(240px 120px at 8% 20%, rgba(240, 193, 75, 0.35), transparent 60%),
+    linear-gradient(110deg, #3b120c 0%, #7a1d12 38%, #9a3412 100%);
+  box-shadow: 0 16px 36px rgba(122, 29, 18, 0.28);
+  color: #fff7ed;
+}
+.due-board.live::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.14) 46%, transparent 70%);
+  animation: due-shine 3.6s linear infinite;
 }
 .due-board.clear {
   border-color: #86efac;
-  background: #f0fdf4;
-  animation: none;
+  background: linear-gradient(110deg, #ecfdf5, #f0fdf4);
+  color: #14532d;
   box-shadow: none;
 }
+.due-board { position: relative; }
 .due-board-main { min-width: 0; }
 .due-board-head {
   display: flex;
@@ -666,9 +676,9 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
   gap: 10px;
 }
 .due-board-head div { flex: 1; min-width: 0; }
-.due-board-head strong { display: block; font-size: 16px; color: #9f1239; }
+.due-board-head strong { display: block; font-size: 18px; color: #fff7ed; }
 .due-board.clear .due-board-head strong { color: #166534; }
-.due-board-head p { margin: 2px 0 0; color: #9f1239; font-size: 13px; }
+.due-board-head p { margin: 2px 0 0; color: #fed7aa; font-size: 13px; }
 .due-board.clear .due-board-head p { color: #15803d; }
 .pulse-dot {
   width: 12px;
@@ -717,16 +727,17 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
 }
 .open-this-btn {
   border: 0;
-  background: #e11d48;
-  color: white;
+  background: linear-gradient(180deg, #fbbf24, #d97706);
+  color: #1a0c04;
   font-weight: 800;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   border-radius: 999px;
-  padding: 10px 16px;
-  min-height: 44px;
+  padding: 12px 18px;
+  min-height: 48px;
   animation: open-pop 1.1s ease-in-out infinite;
-  box-shadow: 0 8px 18px rgba(225, 29, 72, 0.28);
+  box-shadow: 0 10px 22px rgba(217, 119, 6, 0.45);
+  z-index: 2;
 }
 .open-this-btn:hover { filter: brightness(1.06); }
 .open-this {
@@ -753,15 +764,15 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
   width: max-content;
   animation: due-marquee var(--due-speed, 28s) linear infinite;
 }
-.due-board:hover .due-track-inner { animation-play-state: paused; }
 .due-chip {
   flex: none;
-  width: 230px;
+  width: 236px;
   text-align: left;
-  border: 1px solid #fda4af;
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 14px;
-  padding: 10px 12px;
+  border: 1px solid rgba(240, 193, 75, 0.55);
+  background: linear-gradient(180deg, #fffaf0, #fff7ed);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
   animation: due-bob 2.6s ease-in-out infinite;
 }
 .due-chip.cater { border-color: #c4b5fd; }
@@ -778,14 +789,54 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
 .due-chip strong { display: block; margin: 4px 0 2px; font-size: 14px; color: #1b2430; }
 .due-chip em { display: block; color: #8b97a8; font-style: normal; font-size: 12px; }
 .due-chip b { display: block; margin-top: 6px; color: #be123c; font-variant-numeric: tabular-nums; }
+.pending-hero {
+  background: linear-gradient(120deg, #7a1d12, #c2410c);
+  color: #fff7ed;
+  border: 0;
+}
+.pending-hero h2, .pending-hero .eyebrow, .pending-hero .muted { color: #fff7ed; }
+.pending-hero .muted { opacity: 0.86; }
+.pending-hero .search { background: white; }
+.pending-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.pending-card {
+  background: white;
+  border: 1px solid #f3d2b5;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(31, 42, 55, 0.06);
+}
+.pending-card.cater { border-color: #ddd6fe; }
+.pending-card.on { outline: 3px solid #f59e0b; }
+.pending-top strong { display: block; margin: 8px 0 4px; font-size: 18px; }
+.pending-top .badge { margin-right: 6px; }
+.pending-money {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+.pending-money div {
+  background: #fff7ed;
+  border-radius: 12px;
+  padding: 8px;
+}
+.pending-money span { display: block; color: #8b97a8; font-size: 12px; }
+.pending-money b { font-size: 15px; color: #9f1239; }
+.pending-status, .pending-receive { display: flex; flex-direction: column; gap: 8px; }
+.pending-status { flex-direction: row; margin-bottom: 10px; }
+.belan-stage { filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.28)); }
 @keyframes due-ping {
   0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.55); }
   75% { box-shadow: 0 0 0 12px rgba(225, 29, 72, 0); }
   100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
 }
-@keyframes due-wash {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+@keyframes due-shine {
+  from { transform: translateX(-60%); }
+  to { transform: translateX(60%); }
 }
 @keyframes due-marquee {
   from { transform: translateX(0); }
@@ -821,7 +872,7 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
   .belan-stage { margin: 0 auto; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .due-board, .pulse-dot, .due-track-inner, .due-chip,
+  .due-board, .due-board.live::after, .pulse-dot, .due-track-inner, .due-chip,
   .belan-stage .dough, .belan-stage .belan, .belan-stage .flour circle,
   .open-flag, .open-this, .open-this-btn { animation: none; }
 }

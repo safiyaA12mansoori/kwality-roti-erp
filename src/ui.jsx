@@ -204,12 +204,23 @@ export function Glyph({ name }) {
       {name === 'spend' && <><circle cx="12" cy="12" r="8" {...pen} /><path d="M12 8v8M9.5 10.5c.6-1 1.6-1.5 2.6-1.5 1.6 0 2.4.8 2.4 1.8 0 2.4-5 1.2-5 3.4 0 1 .9 1.8 2.6 1.8 1.1 0 2-.5 2.5-1.3" {...pen} /></>}
       {name === 'money' && <path d="M4 7h16v10H4zM4 10c2.5 1.4 5.5 2 8 2s5.5-.6 8-2M12 7v10" {...pen} />}
       {name === 'bills' && <><path d="M7 3h10v18H7z" {...pen} /><path d="M10 8h4M10 12h4M10 16h3" {...pen} /></>}
+      {name === 'pending' && <><circle cx="12" cy="12" r="8" {...pen} /><path d="M12 8v5M12 16.5h.01" {...pen} /></>}
     </svg>
   )
 }
 
 export function go(id) {
   location.hash = id
+}
+
+export function openPending(id) {
+  try {
+    if (id) sessionStorage.setItem('erp-pending', id)
+    else sessionStorage.removeItem('erp-pending')
+  } catch {
+    /* ignore */
+  }
+  location.hash = 'pending'
 }
 
 export function openProfile(kind, id) {

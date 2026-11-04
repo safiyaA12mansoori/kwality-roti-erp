@@ -133,14 +133,18 @@ export function unpaidBills(state) {
   }
 }
 
-export function allocatePayment({ orders, payments, hotelId, amount, date, method, note, uid }) {
+export function allocatePayment({ orders, payments, hotelId, amount, date, method, note, uid, orderId }) {
   let left = round(amount)
   if (left <= 0) return []
   const created = []
   const mine = orders
     .filter((order) => order.hotelId === hotelId)
     .slice()
-    .sort((a, b) => a.date.localeCompare(b.date) || String(a.no).localeCompare(String(b.no)))
+    .sort((a, b) => {
+      if (orderId && a.id === orderId) return -1
+      if (orderId && b.id === orderId) return 1
+      return a.date.localeCompare(b.date) || String(a.no).localeCompare(String(b.no))
+    })
 
   for (const order of mine) {
     if (left <= 0) break

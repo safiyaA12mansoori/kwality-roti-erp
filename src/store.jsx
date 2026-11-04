@@ -901,11 +901,12 @@ export function StoreProvider({ children }) {
           orders: current.orders,
           payments: current.payments,
           hotelId: draft.hotelId,
-          amount: draft.amount,
+          amount: moneyInput(draft.amount),
           date: workingDate,
           method: draft.method || 'cash',
           note: (draft.note || '').trim(),
           uid,
+          orderId: draft.orderId,
         })
         if (!created.length) {
           result.reason = 'Enter an amount greater than zero.'
