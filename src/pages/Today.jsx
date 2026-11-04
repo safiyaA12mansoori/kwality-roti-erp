@@ -21,6 +21,35 @@ import {
 import { useStore } from '../store'
 import { go } from '../ui'
 
+function BelanStage({ live }) {
+  return (
+    <div className={live ? 'belan-stage' : 'belan-stage rest'} aria-hidden="true">
+      <svg viewBox="0 0 160 120" width="160" height="120">
+        <ellipse className="chakla" cx="80" cy="78" rx="54" ry="16" fill="#d6b17a" />
+        <ellipse className="chakla-rim" cx="80" cy="76" rx="50" ry="13" fill="#f3d7a4" />
+        <ellipse className="dough" cx="80" cy="74" rx="28" ry="10" fill="#f6e1b8" />
+        <ellipse className="dough-shine" cx="72" cy="71" rx="10" ry="3" fill="#fff6de" opacity="0.7" />
+        <g className="flour">
+          <circle cx="38" cy="62" r="1.6" fill="#fff4d6" />
+          <circle cx="118" cy="58" r="1.4" fill="#fff4d6" />
+          <circle cx="50" cy="48" r="1.2" fill="#fff4d6" />
+          <circle cx="110" cy="46" r="1.3" fill="#fff4d6" />
+          <circle cx="70" cy="40" r="1.1" fill="#fff4d6" />
+        </g>
+        <g className="belan">
+          <rect x="12" y="54" width="18" height="8" rx="4" fill="#c08457" />
+          <rect x="130" y="54" width="18" height="8" rx="4" fill="#c08457" />
+          <rect x="28" y="50" width="104" height="16" rx="8" fill="#8b5a2b" />
+          <rect x="32" y="53" width="96" height="5" rx="2.5" fill="#d4a373" opacity="0.55" />
+          <circle cx="34" cy="58" r="3" fill="#6b3f1d" />
+          <circle cx="126" cy="58" r="3" fill="#6b3f1d" />
+        </g>
+      </svg>
+      {live && <span className="open-flag">Open this</span>}
+    </div>
+  )
+}
+
 const COLORS = {
   hotels: '#7c5cfc',
   wages: '#e11d48',
@@ -169,46 +198,52 @@ export function Today() {
       </div>
 
       <section className={waiting.rows.length ? 'due-board live' : 'due-board clear'}>
-        <div className="due-board-head">
-          <span className={waiting.rows.length ? 'pulse-dot' : 'pulse-dot ok'} />
-          {waiting.rows.length ? (
-            <div>
-              <strong>Waiting for payment</strong>
-              <p>
-                {waiting.parties === 1 ? '1 party' : `${num(waiting.parties)} parties`}
-                {waiting.catering ? ` · ${num(waiting.catering)} catering` : ''}
-                {` still to pay ${inr(waiting.total)}`}
-              </p>
-            </div>
-          ) : (
-            <div>
-              <strong>All hotel and catering bills are paid</strong>
-              <p>No pending order is waiting for money.</p>
-            </div>
-          )}
+        <BelanStage live={waiting.rows.length > 0} />
+        <div className="due-board-main">
+          <div className="due-board-head">
+            <span className={waiting.rows.length ? 'pulse-dot' : 'pulse-dot ok'} />
+            {waiting.rows.length ? (
+              <div>
+                <strong>Waiting for payment</strong>
+                <p>
+                  {waiting.parties === 1 ? '1 party' : `${num(waiting.parties)} parties`}
+                  {waiting.catering ? ` · ${num(waiting.catering)} catering` : ''}
+                  {` still to pay ${inr(waiting.total)}`}
+                </p>
+              </div>
+            ) : (
+              <div>
+                <strong>All hotel and catering bills are paid</strong>
+                <p>No pending order is waiting for money.</p>
+              </div>
+            )}
+            {waiting.rows.length > 0 && (
+              <button className="open-this-btn" type="button" onClick={() => go('orders')}>
+                Open this
+              </button>
+            )}
+          </div>
           {waiting.rows.length > 0 && (
-            <button className="btn good" type="button" onClick={() => go('orders')}>Collect now</button>
+            <div className="due-track" style={{ '--due-speed': `${Math.max(16, waiting.rows.length * 5)}s` }}>
+              <div className="due-track-inner">
+                {[0, 1].flatMap((copy) => waiting.rows.map((row) => (
+                  <button
+                    className={`due-chip ${row.kind === 'Catering' ? 'cater' : 'hotel'}`}
+                    type="button"
+                    key={`${copy}-${row.id}`}
+                    onClick={() => go('orders')}
+                  >
+                    <span className="open-this">Open this</span>
+                    <span className="due-kind">{row.kind}{row.pending ? ' · pending' : ''}</span>
+                    <strong>{row.card.title}</strong>
+                    <em>{row.no} · {prettyDate(row.date)}</em>
+                    <b>{inr(row.due)}</b>
+                  </button>
+                )))}
+              </div>
+            </div>
           )}
         </div>
-        {waiting.rows.length > 0 && (
-          <div className="due-track" style={{ '--due-speed': `${Math.max(16, waiting.rows.length * 5)}s` }}>
-            <div className="due-track-inner">
-              {[0, 1].flatMap((copy) => waiting.rows.map((row) => (
-                <button
-                  className={`due-chip ${row.kind === 'Catering' ? 'cater' : 'hotel'}`}
-                  type="button"
-                  key={`${copy}-${row.id}`}
-                  onClick={() => go('orders')}
-                >
-                  <span className="due-kind">{row.kind}{row.pending ? ' · pending' : ''}</span>
-                  <strong>{row.card.title}</strong>
-                  <em>{row.no} · {prettyDate(row.date)}</em>
-                  <b>{inr(row.due)}</b>
-                </button>
-              )))}
-            </div>
-          </div>
-        )}
       </section>
 
       <section className="kpi-grid six">
