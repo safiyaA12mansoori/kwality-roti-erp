@@ -3,7 +3,7 @@ import { byId, cleanLines, hotelBalance, hotelCard, hotelOrderBoard, hotelPrice,
 import { esc, inr, methodLabel, num, prettyDate } from '../format'
 import { companyBlock, printDocument } from '../print'
 import { useStore } from '../store'
-import { Field, Modal, QtyStepper, SearchBar } from '../ui'
+import { Field, Modal, SearchBar } from '../ui'
 
 function blankLine(state, hotelId) {
   const hotel = byId(state.hotels, hotelId)
@@ -174,7 +174,14 @@ export function Orders() {
                   {products.map((product) => <option key={product.id} value={product.id}>{product.name}</option>)}
                 </select>
               )}
-              <QtyStepper value={line.qty} onCommit={(qty) => updateLine(index, { qty: String(qty) })} />
+              <input
+                className="qty"
+                inputMode="numeric"
+                value={line.qty}
+                placeholder="Qty"
+                aria-label="Quantity"
+                onChange={(event) => updateLine(index, { qty: event.target.value })}
+              />
               <input value={line.rate} inputMode="decimal" placeholder="Rate" onChange={(event) => updateLine(index, { rate: event.target.value })} />
               <span className="amt">{inr(whole(line.qty) * moneyInput(line.rate))}</span>
               {products.length > 1 && (

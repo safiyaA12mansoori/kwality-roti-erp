@@ -83,14 +83,23 @@ button, input, select, .card, .tile, .list-row, .wage-card, .pick-row {
   gap: 12px;
 }
 .count-grid { padding-bottom: 88px; }
-.qty-step {
+.qty-step, .qty-save {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
-  justify-content: flex-end;
 }
-.qty-step .qty { width: 88px; font-size: 22px; text-align: center; }
+.qty-save { margin: 8px 0 4px; }
+.qty-save .qty { flex: 1; min-width: 96px; font-size: 22px; text-align: center; }
+.qty-saved {
+  flex: 1;
+  min-width: 96px;
+  font-size: 28px;
+  line-height: 1.1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.qty-save .btn { min-height: 44px; min-width: 88px; }
 .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .chip-row .btn.on { background: var(--terra); border-color: var(--terra); color: #1a0c04; }
 
@@ -496,6 +505,7 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
   padding: 8px 0;
   border-bottom: 1px solid var(--line);
 }
+.basket-line .qty { width: 88px; text-align: center; }
 .step { display: inline-flex; align-items: center; gap: 6px; }
 .step button {
   width: 36px;
@@ -919,15 +929,8 @@ input.qty:disabled { background: #f4efe8; color: var(--ink-soft); }
 @media (max-width: 640px) {
   .stats, .grid-2, .tiles, .grid-3, .line, .wage-kpis, .method-grid { grid-template-columns: 1fr; }
   .paybar, .banner, .card-head, .spread { flex-direction: column; align-items: stretch; }
-  .qty-step {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1.5fr 1fr 1fr;
-    width: 100%;
-    justify-content: stretch;
-  }
-  .qty-step .qty { width: 100%; font-size: 20px; }
-  .qty-step button:nth-child(3),
-  .qty-step button:nth-child(5) { display: none; }
+  .qty-save { width: 100%; }
+  .qty-save .qty, .qty-saved { width: 100%; font-size: 22px; }
   .people-grid, .count-grid, .attend-grid, .wage-grid { grid-template-columns: 1fr; }
   .count-grid, .wage-grid { padding-bottom: 24px; }
   .card { padding: 14px 12px; }

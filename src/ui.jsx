@@ -92,19 +92,52 @@ export function DayNav({ date, onChange }) {
   )
 }
 
-export function QtyStepper({ value, onCommit, disabled, jumps = [10, 50] }) {
-  const n = whole(value)
+export function QtyStepper({ value, onCommit, disabled }) {
+  const saved = whole(value)
+  const [text, setText] = useState(saved ? String(saved) : '')
+  const [editing, setEditing] = useState(!saved)
+
+  useEffect(() => {
+    setText(saved ? String(saved) : '')
+    setEditing(!saved)
+  }, [saved])
+
+  function save() {
+    const next = whole(text)
+    onCommit(next)
+    setText(next ? String(next) : '')
+    setEditing(false)
+  }
+
+  if (!editing) {
+    return (
+      <div className="qty-save">
+        <strong className="qty-saved">{saved}</strong>
+        <button className="btn" type="button" disabled={disabled} onClick={() => { setEditing(true); setText(saved ? String(saved) : '') }}>
+          Edit
+        </button>
+      </div>
+    )
+  }
+
   return (
-    <div className="qty-step">
-      {jumps.slice().reverse().map((jump) => (
-        <button key={`m${jump}`} className="btn" type="button" disabled={disabled} onClick={() => onCommit(Math.max(0, n - jump))}>−{jump}</button>
-      ))}
-      <button className="btn" type="button" disabled={disabled} onClick={() => onCommit(Math.max(0, n - 1))}>−</button>
-      <NumberBox value={n} onCommit={onCommit} disabled={disabled} />
-      <button className="btn" type="button" disabled={disabled} onClick={() => onCommit(n + 1)}>+</button>
-      {jumps.map((jump) => (
-        <button key={`p${jump}`} className="btn" type="button" disabled={disabled} onClick={() => onCommit(n + jump)}>+{jump}</button>
-      ))}
+    <div className="qty-save">
+      <input
+        className="qty"
+        inputMode="numeric"
+        disabled={disabled}
+        value={text}
+        placeholder="Qty"
+        aria-label="Quantity"
+        onChange={(event) => setText(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault()
+            save()
+          }
+        }}
+      />
+      <button className="btn primary" type="button" disabled={disabled} onClick={save}>Save</button>
     </div>
   )
 }

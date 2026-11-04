@@ -52,7 +52,7 @@ export function Count() {
           <button className={filter === 'open' ? 'btn on' : 'btn'} type="button" onClick={() => setFilter('open')}>Not counted</button>
           <button className={filter === 'done' ? 'btn on' : 'btn'} type="button" onClick={() => setFilter('done')}>Counted</button>
         </div>
-        <p className="muted">Tap +10 or +50. Pay is count × {product ? inr(product.workerRate) : ''} (or the worker’s own rate).</p>
+        <p className="muted">Type the count, then Save. Pay is count × {product ? inr(product.workerRate) : ''} (or the worker’s own rate).</p>
       </article>
 
       {shown.length === 0 && (
@@ -76,9 +76,10 @@ export function Count() {
                 {day.paid && <span className="badge paid">Paid</span>}
               </div>
               <QtyStepper
+                key={`${worker.id}-${date}`}
                 value={qty}
-                disabled={day.paid}
-                onCommit={(next) => setProduction(worker.id, product.id, next)}
+                disabled={day.paid || !product}
+                onCommit={(next) => product && setProduction(worker.id, product.id, next)}
               />
               <div className="wage-pay">
                 <div>

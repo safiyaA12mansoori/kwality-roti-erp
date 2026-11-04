@@ -19,7 +19,7 @@ import { Brand, DayNav, Glyph } from './ui'
 const PAGES = [
   { id: 'today', label: 'Dashboard', group: 'Admin', icon: 'today', dated: true, admin: true, blurb: 'See money, pay, and costs. Tap a card to open the page.' },
   { id: 'reports', label: 'Statement', group: 'Admin', icon: 'reports', dated: false, admin: true, blurb: 'Search and print one hotel, worker, or walk-in invoice.' },
-  { id: 'count', label: 'Count chapati', group: 'Daily', icon: 'count', dated: true, blurb: 'Tap +10 or +50, or type the count. Then pay workers.' },
+  { id: 'count', label: 'Count chapati', group: 'Daily', icon: 'count', dated: true, blurb: 'Type the count, tap Save. Tap Edit to change it. Then pay workers.' },
   { id: 'wages', label: 'Pay workers', group: 'Daily', icon: 'wages', dated: true, admin: true, blurb: 'Pay 1 day, 1 week, 15 days, or custom. Cash, UPI, or bank.' },
   { id: 'attend', label: 'Attendance', group: 'Daily', icon: 'attend', dated: true, blurb: 'Tap Present or Absent for each worker.' },
   { id: 'counter', label: 'Walk-in sale', group: 'Entry', icon: 'counter', dated: true, blurb: 'Tap chapati, choose Cash or UPI, save the bill.' },

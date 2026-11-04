@@ -133,11 +133,14 @@ export function Counter() {
                   <strong>{product?.name}</strong>
                   <div className="muted">{inr(line.rate)} each</div>
                 </div>
-                <div className="step">
-                  <button type="button" onClick={() => setQty(line.productId, qty - 1)} aria-label="Decrease">−</button>
-                  <span>{qty}</span>
-                  <button type="button" onClick={() => setQty(line.productId, qty + 1)} aria-label="Increase">+</button>
-                </div>
+                <input
+                  className="qty"
+                  inputMode="numeric"
+                  value={qty || ''}
+                  placeholder="Qty"
+                  aria-label={`${product?.name || 'Chapati'} quantity`}
+                  onChange={(event) => setQty(line.productId, whole(event.target.value))}
+                />
                 <b>{inr(qty * line.rate)}</b>
               </div>
             )
