@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { hasHotelHistory, hotelBalance, hotelPrice } from '../calc'
+import { hotelBalance, hotelPrice } from '../calc'
 import { inr } from '../format'
 import { useStore } from '../store'
 import { Avatar, EmptyState, Field, Modal, SearchBar, openProfile } from '../ui'
@@ -71,23 +71,20 @@ export function Hotels() {
               <div className="row-actions">
                 <button className="btn" type="button" onClick={() => openProfile('hotel', hotel.id)}>Details</button>
                 <button className="btn primary" type="button" onClick={() => openEdit(hotel)}>Edit</button>
-                {hasHotelHistory(state, hotel.id)
-                  ? <button className="btn" type="button" onClick={() => setHotelActive(hotel.id, hotel.active === false)}>
-                    {hotel.active === false ? 'Show again' : 'Hide'}
-                  </button>
-                  : (
-                    <button
-                      className="btn danger"
-                      type="button"
-                      onClick={() => {
-                        if (window.confirm(`Do you want to remove ${title} permanently? This cannot be undone.`)) {
-                          removeHotel(hotel.id)
-                        }
-                      }}
-                    >
-                      Remove
-                    </button>
-                  )}
+                {hotel.active === false && (
+                  <button className="btn" type="button" onClick={() => setHotelActive(hotel.id, true)}>Show again</button>
+                )}
+                <button
+                  className="btn danger"
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm(`Do you want to remove ${title} permanently? This cannot be undone.`)) {
+                      if (!removeHotel(hotel.id)) setHotelActive(hotel.id, false)
+                    }
+                  }}
+                >
+                  Remove
+                </button>
               </div>
             </article>
           )

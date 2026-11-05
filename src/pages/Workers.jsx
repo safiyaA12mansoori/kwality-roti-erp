@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { advanceBalance, hasWorkerHistory, sum, workerPrice } from '../calc'
+import { advanceBalance, sum, workerPrice } from '../calc'
 import { inr, num } from '../format'
 import { useStore } from '../store'
 import { Avatar, EmptyState, Field, Modal, SearchBar, openProfile } from '../ui'
@@ -64,23 +64,20 @@ export function Workers() {
               <button className="btn" type="button" onClick={() => openProfile('worker', worker.id)}>Details</button>
               <button className="btn" type="button" onClick={() => setAdvance({ workerId: worker.id, name: worker.name, amount: '', note: '' })}>Advance</button>
               <button className="btn primary" type="button" onClick={() => { setError(''); setEditing({ ...worker, rate }) }}>Edit</button>
-              {hasWorkerHistory(state, worker.id)
-                ? <button className="btn" type="button" onClick={() => setWorkerActive(worker.id, worker.active === false)}>
-                  {worker.active === false ? 'Show again' : 'Hide'}
-                </button>
-                : (
-                    <button
-                      className="btn danger"
-                      type="button"
-                      onClick={() => {
-                        if (window.confirm(`Do you want to remove ${worker.name} permanently? This cannot be undone.`)) {
-                          removeWorker(worker.id)
-                        }
-                      }}
-                    >
-                      Remove
-                    </button>
-                  )}
+              {worker.active === false && (
+                <button className="btn" type="button" onClick={() => setWorkerActive(worker.id, true)}>Show again</button>
+              )}
+              <button
+                className="btn danger"
+                type="button"
+                onClick={() => {
+                  if (window.confirm(`Do you want to remove ${worker.name} permanently? This cannot be undone.`)) {
+                    if (!removeWorker(worker.id)) setWorkerActive(worker.id, false)
+                  }
+                }}
+              >
+                Remove
+              </button>
             </div>
           </article>
         ))}
