@@ -75,7 +75,19 @@ export function Hotels() {
                   ? <button className="btn" type="button" onClick={() => setHotelActive(hotel.id, hotel.active === false)}>
                     {hotel.active === false ? 'Show again' : 'Hide'}
                   </button>
-                  : <button className="btn danger" type="button" onClick={() => removeHotel(hotel.id)}>Remove</button>}
+                  : (
+                    <button
+                      className="btn danger"
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Do you want to remove ${title} permanently? This cannot be undone.`)) {
+                          removeHotel(hotel.id)
+                        }
+                      }}
+                    >
+                      Remove
+                    </button>
+                  )}
               </div>
             </article>
           )

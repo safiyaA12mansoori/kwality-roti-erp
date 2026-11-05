@@ -68,7 +68,19 @@ export function Workers() {
                 ? <button className="btn" type="button" onClick={() => setWorkerActive(worker.id, worker.active === false)}>
                   {worker.active === false ? 'Show again' : 'Hide'}
                 </button>
-                : <button className="btn danger" type="button" onClick={() => removeWorker(worker.id)}>Remove</button>}
+                : (
+                    <button
+                      className="btn danger"
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`Do you want to remove ${worker.name} permanently? This cannot be undone.`)) {
+                          removeWorker(worker.id)
+                        }
+                      }}
+                    >
+                      Remove
+                    </button>
+                  )}
             </div>
           </article>
         ))}
