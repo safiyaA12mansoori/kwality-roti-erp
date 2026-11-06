@@ -10,20 +10,19 @@ import {
   workerPrice,
 } from './calc'
 import { costItem } from './costs'
-import { shiftISO, todayISO } from './format'
+import { todayISO } from './format'
 import { emptyPersonal } from './personal'
 
-const KEY = 'roti-erp-v2'
-const OLD_KEY = 'roti-erp-v1'
+const KEY = 'roti-erp-v3'
 const SESSION_KEY = 'roti-erp-session'
 
 export const defaultSettings = {
   name: 'Kwality Foods',
   tagline: 'Homemade Chapatis',
-  phone: '9810012345',
-  address: 'Shop 12, Grain Market, New Delhi',
-  nextBill: 1044,
-  nextChallan: 230,
+  phone: '',
+  address: '',
+  nextBill: 1,
+  nextChallan: 1,
   hint: true,
 }
 
@@ -103,160 +102,21 @@ export function normalize(raw) {
   }
 }
 
-function seed() {
-  const today = todayISO()
-  const yesterday = shiftISO(-1)
-  const older = shiftISO(-3)
-  const products = [
-    { id: 'p-chapati', name: 'Chapati', workerRate: 1.5, hotelRate: 7, retailRate: 10, active: true },
-  ]
-  const workers = [
-    ['w1', 'Ramesh Yadav', '9811001101'],
-    ['w2', 'Suresh Pal', '9811001102'],
-    ['w3', 'Imran Khan', '9811001103'],
-    ['w4', 'Lakshmi Devi', '9811001104'],
-    ['w5', 'Anita Kumari', '9811001105'],
-    ['w6', 'Prakash Singh', '9811001106'],
-    ['w7', 'Geeta Sharma', '9811001107'],
-    ['w8', 'Mohan Lal', '9811001108'],
-    ['w9', 'Farida Begum', '9811001109'],
-    ['w10', 'Vijay Kumar', '9811001110'],
-    ['w11', 'Sunita Devi', '9811001111'],
-    ['w12', 'Kiran Bai', '9811001112'],
-  ].map(([id, name, phone], index) => ({
-    id,
-    name,
-    phone,
-    active: true,
-    rate: index === 2 ? 1.8 : index === 4 ? 1.4 : 1.5,
-  }))
-
-  const hotels = [
-    ['h1', 'Hotel Grand Plaza', 'Vikram Shah', '9812002201', 'Nehru Place', {}],
-    ['h2', 'Sai Residency', 'Anita Deshmukh', '9812002202', 'Karol Bagh', {}],
-    ['h3', 'City Inn', 'Rohit Malhotra', '9812002203', 'Paharganj', { 'p-chapati': 6.5 }],
-    ['h4', 'Marigold Banquet', 'Pooja Nair', '9812002204', 'Dwarka', {}],
-    ['h5', 'Highway Dhaba', 'Salim Qureshi', '9812002205', 'NH-48', {}],
-    ['h6', 'Lotus Lodge', 'Kavita Jain', '9812002206', 'Saket', {}],
-    ['h7', 'Green View Stay', 'Nisha Patel', '9812002207', 'Lajpat Nagar', {}],
-    ['h8', 'Royal Guest House', 'Arun Mehta', '9812002208', 'Connaught Place', {}],
-  ].map(([id, name, contact, phone, address, rates]) => ({
-    id, name, contact, phone, address, rates, active: true,
-  }))
-
-  const production = []
-  function pushProduction(date, productId, counts, rate, paid) {
-    counts.forEach((qty, index) => {
-      if (!qty) return
-      production.push({
-        id: uid(),
-        date,
-        workerId: workers[index].id,
-        productId,
-        qty,
-        rate,
-        amount: round(qty * rate),
-        paid,
-      })
-    })
-  }
-
-  pushProduction(today, 'p-chapati', [340, 290, 410, 260, 305, 360, 220, 380, 250, 330, 275, 0], 1.5, false)
-  pushProduction(yesterday, 'p-chapati', [300, 280, 360, 240, 290, 330, 210, 350, 230, 310, 260, 180], 1.5, true)
-
-  const orders = []
-  const payments = []
-  function pushOrder(date, hotelId, no, note, lines, pay, method = 'cash') {
-    const clean = lines.map(([productId, qty, rate]) => ({
-      productId, qty, rate, amount: round(qty * rate),
-    }))
-    const id = uid()
-    orders.push({
-      id,
-      no,
-      date,
-      hotelId,
-      note,
-      lines: clean,
-      amount: sum(clean, (line) => line.amount),
-      status: date === today ? 'pending' : 'completed',
-    })
-    if (pay > 0) {
-      payments.push({
-        id: uid(),
-        orderId: id,
-        hotelId,
-        date,
-        amount: round(pay),
-        method,
-        note: pay === orders[orders.length - 1].amount ? 'Paid with delivery' : 'Part payment',
-      })
-    }
-  }
-
-  pushOrder(older, 'h6', 'HD-222', 'Evening function', [['p-chapati', 150, 7]], 0)
-  pushOrder(yesterday, 'h5', 'HD-221', 'Night delivery', [['p-chapati', 200, 7]], 1400, 'cash')
-  pushOrder(today, 'h1', 'HD-226', 'Lunch and dinner', [['p-chapati', 600, 7]], 0)
-  pushOrder(today, 'h2', 'HD-227', 'Paid on UPI', [['p-chapati', 400, 7]], 2800, 'upi')
-  pushOrder(today, 'h3', 'HD-228', 'Balance on the weekly bill', [['p-chapati', 350, 6.5]], 1000, 'cash')
-  pushOrder(today, 'h4', 'HD-229', 'Banquet lunch', [['p-chapati', 500, 7]], 0)
-
-  const sales = []
-  function pushSale(date, no, customerName, phone, method, hour, lines) {
-    const clean = lines.map(([productId, qty, rate]) => ({
-      productId, qty, rate, amount: round(qty * rate),
-    }))
-    sales.push({
-      id: uid(),
-      no,
-      date,
-      at: `${date}T${hour}:00`,
-      customerName,
-      phone,
-      method,
-      lines: clean,
-      amount: sum(clean, (line) => line.amount),
-    })
-  }
-
-  pushSale(yesterday, 'RC-1038', 'Meena Gupta', '9813003301', 'cash', '08:40', [['p-chapati', 30, 10]])
-  pushSale(yesterday, 'RC-1039', '', '', 'cash', '18:10', [['p-chapati', 15, 10]])
-  pushSale(today, 'RC-1040', 'Meena Gupta', '9813003301', 'upi', '07:50', [['p-chapati', 25, 10]])
-  pushSale(today, 'RC-1041', 'Rahul Kitchen', '9813003302', 'cash', '09:15', [['p-chapati', 40, 10]])
-  pushSale(today, 'RC-1042', '', '', 'cash', '11:05', [['p-chapati', 12, 10]])
-  pushSale(today, 'RC-1043', 'S.P. Canteen', '9813003303', 'upi', '13:20', [['p-chapati', 30, 10]])
-
-  const expenses = []
-  function pushCost(date, itemId, qty, amount) {
-    const item = costItem(itemId)
-    expenses.push({ id: uid(), date, itemId, name: item.name, unit: item.unit, qty, amount })
-  }
-  pushCost(today, 'flour', 50, 2200)
-  pushCost(today, 'ghee', 4, 720)
-  pushCost(today, 'gas', 1, 1100)
-  pushCost(today, 'electric', 86, 1450)
-  pushCost(today, 'pack', 20, 180)
-  pushCost(yesterday, 'flour', 50, 2100)
-  pushCost(yesterday, 'transport', 1, 250)
-  pushCost(older, 'ghee', 3, 540)
-
+function emptyBooks() {
   return {
     settings: { ...defaultSettings, books: 'chapati-2' },
-    products,
-    workers,
-    hotels,
-    production,
-    orders,
-    payments,
-    sales,
-    expenses,
-    attendance: workers.slice(0, 10).map((worker) => ({
-      id: uid(),
-      workerId: worker.id,
-      date: today,
-      present: worker.id !== 'w12',
-    })),
-    advances: [{ id: uid(), workerId: 'w1', date: today, amount: 5000, note: 'Advance' }],
+    products: [
+      { id: 'p-chapati', name: 'Chapati', workerRate: 1.5, hotelRate: 7, retailRate: 10, active: true },
+    ],
+    workers: [],
+    hotels: [],
+    production: [],
+    orders: [],
+    payments: [],
+    sales: [],
+    expenses: [],
+    attendance: [],
+    advances: [],
     advanceCuts: [],
     users: defaultUsers(),
     personal: emptyPersonal(),
@@ -378,15 +238,15 @@ function readBooks(key) {
 }
 
 function load() {
-  const saved = readBooks(KEY)
-  if (saved?.settings?.books === 'chapati-2') return migrate(normalize(saved))
-  const older = saved || readBooks(OLD_KEY)
-  if (older?.settings?.hint === false) {
-    const next = migrate(normalize(older))
-    next.settings = { ...next.settings, books: 'chapati-2' }
-    return next
+  try {
+    localStorage.removeItem('roti-erp-v1')
+    localStorage.removeItem('roti-erp-v2')
+  } catch {
+    // Old sample books can stay unread if storage is blocked.
   }
-  return seed()
+  const saved = readBooks(KEY)
+  if (saved) return migrate(normalize(saved))
+  return emptyBooks()
 }
 
 const StoreContext = createContext(null)
@@ -567,7 +427,7 @@ export function StoreProvider({ children }) {
       }))
     },
     resetBooks() {
-      setState(seed())
+      setState(emptyBooks())
       setDate(todayISO())
     },
     importBooks(raw) {

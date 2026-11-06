@@ -10,7 +10,7 @@ export function Prices() {
   const chapati = state.products.find((product) => product.id === 'p-chapati') || state.products[0]
   const needle = query.trim().toLowerCase()
   if (!chapati) {
-    return <article className="card"><p className="empty">Chapati price is missing. Restore the sample company from Settings.</p></article>
+    return <article className="card"><p className="empty">Chapati price is missing.</p></article>
   }
   const workers = state.workers
     .filter((worker) => worker.active !== false)

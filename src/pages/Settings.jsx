@@ -82,13 +82,13 @@ export function Settings() {
             className="btn danger"
             type="button"
             onClick={() => {
-              if (window.confirm('Replace everything on this computer with the sample roti company? Download a backup first if these are your real books.')) {
+              if (window.confirm('Erase every hotel, worker, order, payment, and sale on this computer? Download a backup first if you need these books.')) {
                 resetBooks()
-                setMessage('Sample company restored.')
+                setMessage('All books cleared.')
               }
             }}
           >
-            Restore sample company
+            Clear all data
           </button>
         </div>
         {message && <p className="ok">{message}</p>}
