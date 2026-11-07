@@ -197,6 +197,9 @@ button, input, select, .card, .tile, .list-row, .wage-card, .pick-row {
 .nav-btn.tone-costs { --tone: #ca8a04; }
 .nav-btn.tone-prices { --tone: #4f46e5; }
 .nav-btn.tone-settings { --tone: #78716c; }
+.nav-btn.tone-tables { --tone: #0f766e; }
+.app[data-page="tables"] .topbar h1 { color: #0f766e; }
+.table-picks { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 .nav-btn.tone-pending { --tone: #e11d48; }
 .nav-btn.tone-home { --tone: #16a34a; }
 .nav-btn.tone-spend { --tone: #ea580c; }
