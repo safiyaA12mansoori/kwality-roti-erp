@@ -1,0 +1,187 @@
+CREATE DATABASE IF NOT EXISTS kwality_roti CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE kwality_roti;
+
+CREATE TABLE IF NOT EXISTS settings (
+  id INT NOT NULL PRIMARY KEY,
+  name VARCHAR(160) NOT NULL,
+  tagline VARCHAR(160) NOT NULL DEFAULT '',
+  phone VARCHAR(40) NOT NULL DEFAULT '',
+  address VARCHAR(255) NOT NULL DEFAULT '',
+  next_bill INT NOT NULL DEFAULT 1,
+  next_challan INT NOT NULL DEFAULT 1,
+  hint TINYINT NOT NULL DEFAULT 1,
+  books VARCHAR(40) NOT NULL DEFAULT 'chapati-2',
+  personal_next_bill INT NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  username VARCHAR(80) NOT NULL,
+  password VARCHAR(80) NOT NULL,
+  role VARCHAR(20) NOT NULL,
+  name VARCHAR(120) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS products (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  worker_rate DECIMAL(12,2) NOT NULL DEFAULT 0,
+  hotel_rate DECIMAL(12,2) NOT NULL DEFAULT 0,
+  retail_rate DECIMAL(12,2) NOT NULL DEFAULT 0,
+  active TINYINT NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS workers (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  name VARCHAR(160) NOT NULL,
+  phone VARCHAR(40) NOT NULL DEFAULT '',
+  rate DECIMAL(12,2) NOT NULL DEFAULT 0,
+  active TINYINT NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS hotels (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  name VARCHAR(160) NOT NULL DEFAULT '',
+  contact VARCHAR(160) NOT NULL DEFAULT '',
+  phone VARCHAR(40) NOT NULL DEFAULT '',
+  address VARCHAR(255) NOT NULL DEFAULT '',
+  active TINYINT NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS hotel_rates (
+  hotel_id VARCHAR(64) NOT NULL,
+  product_id VARCHAR(64) NOT NULL,
+  rate DECIMAL(12,2) NOT NULL DEFAULT 0,
+  PRIMARY KEY (hotel_id, product_id)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  bill_no VARCHAR(40) NOT NULL DEFAULT '',
+  order_date DATE NULL,
+  hotel_id VARCHAR(64) NOT NULL DEFAULT '',
+  note VARCHAR(255) NOT NULL DEFAULT '',
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending'
+);
+
+CREATE TABLE IF NOT EXISTS order_lines (
+  id VARCHAR(80) NOT NULL PRIMARY KEY,
+  order_id VARCHAR(64) NOT NULL,
+  product_id VARCHAR(64) NOT NULL,
+  qty DECIMAL(12,2) NOT NULL DEFAULT 0,
+  rate DECIMAL(12,2) NOT NULL DEFAULT 0,
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  line_no INT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  order_id VARCHAR(64) NOT NULL DEFAULT '',
+  hotel_id VARCHAR(64) NOT NULL DEFAULT '',
+  pay_date DATE NULL,
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  method VARCHAR(20) NOT NULL DEFAULT 'cash',
+  note VARCHAR(255) NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS sales (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  bill_no VARCHAR(40) NOT NULL DEFAULT '',
+  sale_date DATE NULL,
+  sold_at VARCHAR(40) NOT NULL DEFAULT '',
+  customer_name VARCHAR(160) NOT NULL DEFAULT '',
+  phone VARCHAR(40) NOT NULL DEFAULT '',
+  method VARCHAR(20) NOT NULL DEFAULT 'cash',
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS sale_lines (
+  id VARCHAR(80) NOT NULL PRIMARY KEY,
+  sale_id VARCHAR(64) NOT NULL,
+  product_id VARCHAR(64) NOT NULL,
+  qty DECIMAL(12,2) NOT NULL DEFAULT 0,
+  rate DECIMAL(12,2) NOT NULL DEFAULT 0,
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  line_no INT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS production (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  work_date DATE NULL,
+  worker_id VARCHAR(64) NOT NULL DEFAULT '',
+  product_id VARCHAR(64) NOT NULL DEFAULT '',
+  qty DECIMAL(12,2) NOT NULL DEFAULT 0,
+  rate DECIMAL(12,2) NOT NULL DEFAULT 0,
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  paid TINYINT NOT NULL DEFAULT 0,
+  pay_method VARCHAR(20) NOT NULL DEFAULT '',
+  paid_on DATE NULL
+);
+
+CREATE TABLE IF NOT EXISTS attendance (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  worker_id VARCHAR(64) NOT NULL,
+  work_date DATE NULL,
+  present TINYINT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS advances (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  worker_id VARCHAR(64) NOT NULL,
+  advance_date DATE NULL,
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  note VARCHAR(255) NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS advance_cuts (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  worker_id VARCHAR(64) NOT NULL,
+  cut_date DATE NULL,
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  method VARCHAR(20) NOT NULL DEFAULT 'cash'
+);
+
+CREATE TABLE IF NOT EXISTS expenses (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  expense_date DATE NULL,
+  item_id VARCHAR(40) NOT NULL DEFAULT '',
+  name VARCHAR(120) NOT NULL DEFAULT '',
+  unit VARCHAR(40) NOT NULL DEFAULT '',
+  qty DECIMAL(12,2) NOT NULL DEFAULT 0,
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS personal_incomes (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  bill_no VARCHAR(40) NOT NULL DEFAULT '',
+  income_date DATE NULL,
+  source VARCHAR(160) NOT NULL DEFAULT '',
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  method VARCHAR(20) NOT NULL DEFAULT 'cash',
+  note VARCHAR(255) NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS personal_expenses (
+  id VARCHAR(64) NOT NULL PRIMARY KEY,
+  bill_no VARCHAR(40) NOT NULL DEFAULT '',
+  expense_date DATE NULL,
+  category VARCHAR(40) NOT NULL DEFAULT '',
+  amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  method VARCHAR(20) NOT NULL DEFAULT 'cash',
+  note VARCHAR(255) NOT NULL DEFAULT ''
+);
+
+INSERT INTO settings (id, name, tagline, phone, address, next_bill, next_challan, hint, books, personal_next_bill)
+VALUES (1, 'Kwality Foods', 'Homemade Chapatis', '', '', 1, 1, 1, 'chapati-2', 1)
+ON DUPLICATE KEY UPDATE id = id;
+
+INSERT INTO products (id, name, worker_rate, hotel_rate, retail_rate, active)
+VALUES ('p-chapati', 'Chapati', 1.50, 7.00, 10.00, 1)
+ON DUPLICATE KEY UPDATE id = id;
+
+INSERT INTO users (id, username, password, role, name) VALUES
+  ('u-admin', 'admin', 'h7045830c', 'admin', 'Admin'),
+  ('u-staff', 'staff', 'h6b8a537f', 'worker', 'Staff'),
+  ('u-owner', 'owner', 'hc496d4c', 'owner', 'Owner')
+ON DUPLICATE KEY UPDATE id = id;

@@ -5,102 +5,6 @@ import { Field } from '../ui'
 
 const blankUser = { id: '', name: '', username: '', password: '', role: 'worker' }
 
-const storedBooks = [
-  { id: 'hotels', label: 'Hotels', columns: [['Name', 'name'], ['Contact', 'contact'], ['Phone', 'phone'], ['Address', 'address']] },
-  { id: 'workers', label: 'Workers', columns: [['Name', 'name'], ['Phone', 'phone'], ['Rate', 'rate']] },
-  { id: 'orders', label: 'Hotel orders', columns: [['Bill', 'no'], ['Date', 'date'], ['Amount', 'amount'], ['Status', 'status']] },
-  { id: 'payments', label: 'Payments', columns: [['Date', 'date'], ['Amount', 'amount'], ['Method', 'method'], ['Note', 'note']] },
-  { id: 'sales', label: 'Walk-in sales', columns: [['Bill', 'no'], ['Date', 'date'], ['Customer', 'customerName'], ['Amount', 'amount']] },
-  { id: 'production', label: 'Chapati counts', columns: [['Date', 'date'], ['Quantity', 'qty'], ['Amount', 'amount'], ['Paid', 'paid']] },
-  { id: 'attendance', label: 'Attendance', columns: [['Date', 'date'], ['Present', 'present']] },
-  { id: 'advances', label: 'Advances', columns: [['Date', 'date'], ['Amount', 'amount'], ['Note', 'note']] },
-  { id: 'expenses', label: 'Costs', columns: [['Date', 'date'], ['Item', 'name'], ['Quantity', 'qty'], ['Amount', 'amount']] },
-  { id: 'products', label: 'Chapati price', columns: [['Name', 'name'], ['Worker rate', 'workerRate'], ['Hotel rate', 'hotelRate'], ['Shop rate', 'retailRate']] },
-  { id: 'users', label: 'Logins', columns: [['Name', 'name'], ['Username', 'username'], ['Role', 'role']] },
-]
-
-function shownCell(value) {
-  if (value == null || value === '') return '—'
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
-  return String(value)
-}
-
-function StoredBooks({ state }) {
-  const [bookId, setBookId] = useState('hotels')
-  const lists = storedBooks.map((book) => ({ ...book, rows: state[book.id] || [] }))
-  const personal = state.personal || { incomes: [], expenses: [] }
-  const selected = lists.find((book) => book.id === bookId) || lists[0]
-
-  return (
-    <article className="card">
-      <h2>Stored books</h2>
-      <p className="muted">
-        These rows are the database. They are saved in this browser under the name roti-erp-v3.
-        Another computer does not see them.
-      </p>
-      <div className="table-wrap">
-        <table className="data">
-          <thead>
-            <tr><th>List</th><th className="num">Rows</th><th /></tr>
-          </thead>
-          <tbody>
-            {lists.map((book) => (
-              <tr key={book.id}>
-                <td>{book.label}</td>
-                <td className="num">{book.rows.length}</td>
-                <td><button className="btn" type="button" onClick={() => setBookId(book.id)}>Open</button></td>
-              </tr>
-            ))}
-            <tr>
-              <td>Owner income</td>
-              <td className="num">{personal.incomes?.length || 0}</td>
-              <td><button className="btn" type="button" onClick={() => setBookId('incomes')}>Open</button></td>
-            </tr>
-            <tr>
-              <td>Owner expenses</td>
-              <td className="num">{personal.expenses?.length || 0}</td>
-              <td><button className="btn" type="button" onClick={() => setBookId('expenses-personal')}>Open</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      {bookId === 'incomes' && (
-        <BookTable title="Owner income" columns={[['Bill', 'no'], ['Date', 'date'], ['Source', 'source'], ['Amount', 'amount']]} rows={personal.incomes || []} />
-      )}
-      {bookId === 'expenses-personal' && (
-        <BookTable title="Owner expenses" columns={[['Bill', 'no'], ['Date', 'date'], ['Category', 'category'], ['Amount', 'amount']]} rows={personal.expenses || []} />
-      )}
-      {selected && bookId !== 'incomes' && bookId !== 'expenses-personal' && (
-        <BookTable title={selected.label} columns={selected.columns} rows={selected.rows} />
-      )}
-    </article>
-  )
-}
-
-function BookTable({ title, columns, rows }) {
-  return (
-    <>
-      <h2 style={{ marginTop: 18 }}>{title}</h2>
-      {rows.length === 0 && <p className="empty">No rows saved yet.</p>}
-      {rows.length > 0 && (
-        <div className="table-wrap">
-          <table className="data">
-            <thead>
-              <tr>{columns.map(([label]) => <th key={label}>{label}</th>)}</tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id || `${row.no}-${row.date}`}>
-                  {columns.map(([label, key]) => <td key={label}>{shownCell(row[key])}</td>)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </>
-  )
-}
 
 export function Settings() {
   const { state, patchSettings, resetBooks, importBooks, saveUser, removeUser } = useStore()
@@ -158,8 +62,8 @@ export function Settings() {
           </Field>
         </div>
         <p className="muted">
-          These books stay in this browser on this computer. They are not on the internet.
-          Download a backup after wages are paid, and keep that file somewhere safe.
+          These books are saved in the Hostinger database u774559821_kwality.
+          Open hPanel, then phpMyAdmin, and choose that database to see the tables.
         </p>
         <div className="row-actions">
           <button className="btn primary" type="button" onClick={exportBooks}>Download backup</button>
@@ -191,7 +95,6 @@ export function Settings() {
         {message && <p className="ok">{message}</p>}
       </div>
     </article>
-    <StoredBooks state={state} />
     <article className="card">
       <h2>Admin and staff logins</h2>
       <p className="muted">Admin can open Dashboard and Statement. Staff can only enter hotels, workers, raw material, walk-in sales, and hotel orders. The owner login is private personal books and cannot be changed here.</p>

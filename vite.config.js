@@ -7,10 +7,16 @@ export default defineConfig({
     host: true,
     port: 5173,
     allowedHosts: true,
+    proxy: {
+      '/api': 'http://127.0.0.1:3001',
+    },
   },
   preview: {
     host: true,
     port: 5173,
     allowedHosts: true,
+    proxy: {
+      '/api': 'http://127.0.0.1:3001',
+    },
   },
 })

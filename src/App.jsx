@@ -9,7 +9,6 @@ import { Prices } from './pages/Prices'
 import { OwnerBills, OwnerHome, OwnerMoney, OwnerSpend } from './pages/Owner'
 import { Reports } from './pages/Reports'
 import { Settings } from './pages/Settings'
-import { Tables } from './pages/Tables'
 import { Attendance } from './pages/Attendance'
 import { Pending } from './pages/Pending'
 import { Today } from './pages/Today'
@@ -31,7 +30,6 @@ const PAGES = [
   { id: 'workers', label: 'Worker entry', group: 'Entry', icon: 'workers', dated: false, blurb: 'Add makers, set their rate, give advance.' },
   { id: 'costs', label: 'Raw material', group: 'Entry', icon: 'costs', dated: true, blurb: 'Tap the item, type quantity and price, Add.' },
   { id: 'prices', label: 'Chapati price', group: 'Admin', icon: 'prices', dated: false, admin: true, blurb: 'Set worker, hotel, and walk-in rates. Search to jump to a name.' },
-  { id: 'tables', label: 'Data tables', group: 'Admin', icon: 'tables', dated: false, admin: true, blurb: 'Every saved list, shown as rows and columns.' },
   { id: 'settings', label: 'Settings', group: 'Admin', icon: 'settings', dated: false, admin: true, blurb: 'Company name, logins, and a backup file on this computer.' },
 ]
 
@@ -129,7 +127,10 @@ export default function App() {
       <div className="app" data-page={page.id}>
         {menuOpen && <button className="scrim" type="button" aria-label="Close menu" onClick={() => setMenuOpen(false)} />}
         <aside className={menuOpen ? 'sidebar open' : 'sidebar'}>
-          <Brand subtitle={state.settings.tagline || 'Homemade Chapatis'} />
+          <Brand
+            subtitle={state.settings.tagline || 'Homemade Chapatis'}
+            onClick={() => go(session.role === 'owner' ? 'home' : 'today')}
+          />
           <nav>
             {pages.map((item) => {
               const group = item.group !== lastGroup ? item.group : ''
@@ -201,7 +202,6 @@ export default function App() {
             {page.id === 'prices' && <Prices />}
             {page.id === 'costs' && <Costs />}
             {page.id === 'reports' && <Reports />}
-            {page.id === 'tables' && <Tables />}
             {page.id === 'settings' && <Settings />}
             {page.id === 'home' && <OwnerHome />}
             {page.id === 'spend' && <OwnerSpend />}

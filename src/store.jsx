@@ -14,6 +14,7 @@ import { todayISO } from './format'
 import { emptyPersonal } from './personal'
 
 const KEY = 'roti-erp-v3'
+const BOOKS_URL = 'https://kwalityroti.com/api/books.php?k=kw8f3c1a9e4b27d6'
 const SESSION_KEY = 'roti-erp-session'
 
 export const defaultSettings = {
@@ -255,16 +256,49 @@ export function StoreProvider({ children }) {
   const [state, setState] = useState(load)
   const [date, setDate] = useState(todayISO)
   const [session, setSession] = useState(readSession)
+  const [dbReady, setDbReady] = useState(false)
   const dateRef = useRef(date)
   dateRef.current = date
 
   useEffect(() => {
-    try {
-      localStorage.setItem(KEY, JSON.stringify(state))
-    } catch {
-      // Private mode or a full disk should still leave the screen usable.
+    let ignore = false
+    fetch(BOOKS_URL)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((raw) => {
+        if (ignore) return
+        if (raw?.settings?.name && Array.isArray(raw.workers) && Array.isArray(raw.products)) {
+          setState(migrate(normalize(raw)))
+        }
+      })
+      .catch(() => {
+        // The public site keeps working from this browser when MySQL is not running.
+      })
+      .finally(() => {
+        if (!ignore) setDbReady(true)
+      })
+    return () => {
+      ignore = true
     }
-  }, [state])
+  }, [])
+
+  useEffect(() => {
+    if (!dbReady) return undefined
+    const handle = setTimeout(() => {
+      fetch(BOOKS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body: JSON.stringify(state),
+      }).catch(() => {
+        // A stopped database should not block the screen.
+      })
+      try {
+        localStorage.setItem(KEY, JSON.stringify(state))
+      } catch {
+        // Private mode or a full disk should still leave the screen usable.
+      }
+    }, 200)
+    return () => clearTimeout(handle)
+  }, [state, dbReady])
 
   useEffect(() => {
     document.title = `${state.settings.name} · Homemade Chapatis`
@@ -285,6 +319,22 @@ export function StoreProvider({ children }) {
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(next))
       setSession(next)
       return { ok: true, session: next }
+    },
+    setPassword(username, password) {
+      const name = String(username || '').trim().toLowerCase()
+      const next = String(password || '')
+      if (next.length < 4) return { ok: false, reason: 'Use at least 4 characters.' }
+      let found = false
+      setState((current) => ({
+        ...current,
+        users: current.users.map((user) => {
+          if (user.username !== name) return user
+          found = true
+          return { ...user, password: hashPass(next) }
+        }),
+      }))
+      if (!found) return { ok: false, reason: 'Unknown login.' }
+      return { ok: true }
     },
     logout() {
       sessionStorage.removeItem(SESSION_KEY)

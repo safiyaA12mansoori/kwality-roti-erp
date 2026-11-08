@@ -3,6 +3,7 @@ import { stat } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { extname, join, normalize, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { handleMail } from './mail.mjs'
 
 const dist = resolve(fileURLToPath(new URL('./dist', import.meta.url)))
 const port = Number(process.env.PORT) || 5173
@@ -42,6 +43,7 @@ async function send(res, file, status = 200) {
 
 createServer(async (req, res) => {
   try {
+    if (await handleMail(req, res)) return
     const urlPath = decodeURIComponent((req.url || '/').split('?')[0])
     const requested = normalize(join(dist, urlPath === '/' ? 'index.html' : urlPath))
     if (!insideDist(requested)) {

@@ -8,5 +8,10 @@ if errorlevel 1 (
   exit /b 1
 )
 if not exist node_modules call npm install
+netstat -ano | find ":3306" >nul
+if errorlevel 1 start "MySQL" /MIN "C:\xampp\mysql\bin\mysqld.exe" --defaults-file="C:\xampp\mysql\bin\my.ini" --standalone
+netstat -ano | find ":80 " >nul
+if errorlevel 1 start "Apache" /MIN "C:\xampp\apache\bin\httpd.exe"
+start "Kwality database" /MIN cmd /c "node db-server.mjs"
 start "" http://127.0.0.1:5173
 call npm run dev
